@@ -2,10 +2,27 @@ import crypto from 'node:crypto';
 
 import storage from 'node-persist';
 import express from 'express';
+import lodash from 'lodash';
 import { RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible';
 import { getIpAddress, retryAfter } from '../express-common.js';
+import { checkForNewContent, CONTENT_TYPES } from './content-manager.js';
 import { color, Cache, getConfigValue } from '../util.js';
-import { KEY_PREFIX, getUserAvatar, toKey, getPasswordHash, getPasswordSalt, getAccountVersion } from '../users.js';
+import {
+    KEY_PREFIX,
+    getUserAvatar,
+    toKey,
+    getPasswordHash,
+    getPasswordSalt,
+    getAccountVersion,
+    getAllUserHandles,
+    getUserDirectories,
+    ensurePublicDirectoriesExist,
+} from '../users.js';
+import {
+    authenticateCloudStLogin,
+    isCloudStVerifyLoginEnabled,
+    toCloudStErrorPayload,
+} from '../cloudst.js';
 
 const DISCREET_LOGIN = getConfigValue('enableDiscreetLogin', false, 'boolean');
 const PREFER_REAL_IP_HEADER = getConfigValue('rateLimiting.preferRealIpHeader', false, 'boolean');
@@ -14,6 +31,13 @@ const RECOVER_POINTS = getConfigValue('rateLimiting.accountsRecoverMaxAttempts',
 const MFA_CACHE = new Cache(5 * 60 * 1000);
 
 const generateRecoveryCode = () => Array.from({ length: 6 }, () => crypto.randomInt(0, 10)).join('');
+
+async function maybeSyncUserWithCloudSt(request) {
+    if (!isCloudStVerifyLoginEnabled()) {
+        return null;
+    }
+    return authenticateCloudStLogin(request.body.handle, request.body.password);
+}
 
 export const router = express.Router();
 const loginLimiter = new RateLimiterMemory({
@@ -24,6 +48,19 @@ const recoverLimiter = new RateLimiterMemory({
     points: RECOVER_POINTS > 0 ? RECOVER_POINTS : Number.MAX_SAFE_INTEGER,
     duration: 300,
 });
+const registerLimiter = new RateLimiterMemory({
+    points: 5,
+    duration: 300,
+});
+
+function isPublicRegistrationEnabled() {
+    return getConfigValue('enableUserAccounts', false, 'boolean')
+        && getConfigValue('enablePublicUserRegistration', false, 'boolean');
+}
+
+function slugify(text) {
+    return lodash.deburr(String(text ?? '').toLowerCase().trim()).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
 
 router.post('/list', async (_request, response) => {
     try {
@@ -58,6 +95,72 @@ router.post('/list', async (_request, response) => {
     }
 });
 
+router.post('/register', async (request, response) => {
+    try {
+        if (!isPublicRegistrationEnabled()) {
+            console.warn('Public registration failed: Registration is disabled');
+            return response.status(403).json({ error: 'Public registration is disabled' });
+        }
+
+        if (!request.body.handle || !request.body.password) {
+            console.warn('Public registration failed: Missing required fields');
+            return response.status(400).json({ error: 'Missing required fields' });
+        }
+
+        const ip = getIpAddress(request, PREFER_REAL_IP_HEADER);
+        await registerLimiter.consume(ip);
+
+        const handle = slugify(request.body.handle);
+        if (!handle) {
+            console.warn('Public registration failed: Invalid handle');
+            return response.status(400).json({ error: 'Invalid handle' });
+        }
+
+        const handles = await getAllUserHandles();
+        if (handles.some(x => x === handle)) {
+            console.warn('Public registration failed: User with that handle already exists');
+            return response.status(409).json({ error: 'User already exists' });
+        }
+
+        if (!request.session) {
+            console.error('Session not available');
+            return response.sendStatus(500);
+        }
+
+        const salt = getPasswordSalt();
+        /** @type {import('../users.js').User} */
+        const newUser = {
+            handle,
+            name: String(request.body.name || handle).trim() || handle,
+            created: Date.now(),
+            password: getPasswordHash(request.body.password, salt),
+            salt,
+            admin: false,
+            enabled: true,
+        };
+
+        await storage.setItem(toKey(handle), newUser);
+
+        console.info('Creating data directories for', newUser.handle);
+        await ensurePublicDirectoriesExist();
+        const directories = getUserDirectories(newUser.handle);
+        await checkForNewContent([directories], [CONTENT_TYPES.SETTINGS]);
+
+        await registerLimiter.delete(ip);
+        request.session.handle = newUser.handle;
+        console.info('Public registration successful:', newUser.handle, 'from', ip, 'at', new Date().toLocaleString());
+        return response.json({ handle: newUser.handle });
+    } catch (error) {
+        if (error instanceof RateLimiterRes) {
+            console.error('Public registration failed: Rate limited from', getIpAddress(request, PREFER_REAL_IP_HEADER));
+            return response.status(429).send({ error: 'Too many registration attempts. Try again later.' });
+        }
+
+        console.error('Public registration failed:', error);
+        return response.sendStatus(500);
+    }
+});
+
 router.post('/login', async (request, response) => {
     try {
         if (!request.body.handle) {
@@ -69,7 +172,17 @@ router.post('/login', async (request, response) => {
         await loginLimiter.consume(ip);
 
         /** @type {import('../users.js').User} */
-        const user = await storage.getItem(toKey(request.body.handle));
+        let user = await storage.getItem(toKey(request.body.handle));
+
+        try {
+            const syncedUser = await maybeSyncUserWithCloudSt(request);
+            if (syncedUser) {
+                user = syncedUser;
+            }
+        } catch (error) {
+            const payload = toCloudStErrorPayload(error);
+            return response.status(payload.status).json(payload.body);
+        }
 
         if (!user) {
             console.error('Login failed: User', request.body.handle, 'not found');

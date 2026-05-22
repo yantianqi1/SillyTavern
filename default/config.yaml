@@ -105,6 +105,8 @@ requestProxy:
     - 127.0.0.1
 # Enable multi-user mode
 enableUserAccounts: false
+# Allow visitors on the login page to create regular user accounts.
+enablePublicUserRegistration: false
 # Enable discreet login mode: hides user list on the login screen
 enableDiscreetLogin: false
 # If `basicAuthMode` and this are enabled then

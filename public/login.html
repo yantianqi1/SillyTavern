@@ -12,7 +12,7 @@
     <style>
         /* Put critical CSS here. The rest should go in stylesheets. */
         body {
-            background-color: rgb(36, 36, 37);
+            background-color: #080b12;
         }
     </style>
     <link rel="preload" as="style" href="style.css">
@@ -31,48 +31,74 @@
     <link href="css/fontawesome.min.css" rel="stylesheet">
     <link href="css/solid.min.css" rel="stylesheet">
     <link href="css/user.css" rel="stylesheet">
-    <title>SillyTavern</title>
+    <title>忘忧酒馆</title>
 </head>
 
 <body class="login">
-    <div id="shadow_popup" style="opacity: 0;">
+    <div id="shadow_popup">
         <div id="dialogue_popup">
             <div id="dialogue_popup_holder">
                 <div id="dialogue_popup_text">
                     <div id="userSelectBlock" class="flex-container flexFlowColumn alignItemsCenter">
                         <h2 id="logoBlock" class="flex-container">
-                            <img src="img/logo.png" alt="SillyTavern" class="logo">
-                            <span>Welcome to SillyTavern</span>
+                            <span class="login-welcome-title">欢迎登录忘忧酒馆</span>
                         </h2>
                         <h3 id="normalLoginPrompt">
-                            Select an Account
+                            请输入账号密码
                         </h3>
-                        <h3 id="discreetLoginPrompt">
-                            Enter Login Details
+                        <h3 id="discreetLoginPrompt" style="display:none;">
+                            请输入登录信息
+                        </h3>
+                        <h3 id="registerPrompt" style="display:none;">
+                            注册账号
                         </h3>
                         <div id="userListBlock" class="wide100p">
                             <div id="userList" class="flex-container justifySpaceEvenly"></div>
-                            <div id="handleEntryBlock" style="display:none;" class="flex-container flexFlowColumn alignItemsCenter">
-                                <input id="userHandle" class="text_pole" type="text" placeholder="User handle" autocomplete="username">
+                            <div id="handleEntryBlock" class="flex-container flexFlowColumn alignItemsCenter">
+                                <input id="userHandle" class="text_pole" type="text" placeholder="账号" autocomplete="username">
                             </div>
-                            <div id="passwordEntryBlock" style="display:none;"
+                            <div id="passwordEntryBlock"
                                 class="flex-container flexFlowColumn alignItemsCenter">
-                                <input id="userPassword" class="text_pole" type="password" placeholder="Password" autocomplete="current-password">
-                                <a id="recoverPassword" href="#" onclick="return false;">Forgot password?</a>
-                                <div class="flex-container">
-                                    <div id="loginButton" class="menu_button">Login</div>
+                                <input id="userPassword" class="text_pole" type="password" placeholder="密码" autocomplete="current-password">
+                                <div class="login-actions">
+                                    <div id="loginButton" class="menu_button">登录</div>
                                 </div>
                             </div>
-                            <div id="passwordRecoveryBlock" style="display:none;" class="flex-container flexFlowColumn alignItemsCenter">
-                                <div id="recoverMessage">
-                                    Recovery code has been posted to the server console.
+                            <div id="loginAnnouncement" class="login-announcement">
+                                <div class="login-announcement__icon">
+                                    <i class="fa-fw fa-solid fa-bullhorn"></i>
                                 </div>
-                                <input id="recoveryCode" class="text_pole" type="text" placeholder="Recovery code">
-                                <input id="newPassword" class="text_pole" type="password" placeholder="New password" autocomplete="new-password">
-                                <div class="flex-container flexGap10">
-                                    <div id="sendRecovery" class="menu_button">Send</div>
-                                    <div id="cancelRecovery" class="menu_button">Cancel</div>
+                                <div class="login-announcement__content">
+                                    <div class="login-announcement__eyebrow">公告</div>
+                                    <div class="login-announcement__title">API购买地址</div>
+                                    <a href="https://wang.aihaochi.com" target="_blank" rel="noopener noreferrer">https://wang.aihaochi.com</a>
                                 </div>
+                            </div>
+                        </div>
+                        <div id="registrationEntryBlock" class="flex-container justifyCenter">
+                            <div id="showRegisterButton" class="menu_button menu_button_icon">
+                                <i class="fa-fw fa-solid fa-user-plus"></i>
+                                <span>注册账号</span>
+                            </div>
+                        </div>
+                        <div id="registrationBlock" style="display:none;" class="flex-container flexFlowColumn alignItemsCenter">
+                            <input id="registerName" class="text_pole" type="text" placeholder="显示名称" autocomplete="name">
+                            <input id="registerHandle" class="text_pole" type="text" placeholder="账号，只能使用小写字母、数字和-" autocomplete="username" pattern="[a-z0-9-]+">
+                            <input id="registerPassword" class="text_pole" type="password" placeholder="密码" autocomplete="new-password">
+                            <input id="registerConfirmPassword" class="text_pole" type="password" placeholder="确认密码" autocomplete="new-password">
+                            <div id="registrationAnnouncement" class="login-announcement registration-announcement">
+                                <div class="login-announcement__icon">
+                                    <i class="fa-fw fa-solid fa-bullhorn"></i>
+                                </div>
+                                <div class="login-announcement__content">
+                                    <div class="login-announcement__eyebrow">公告</div>
+                                    <div class="login-announcement__title">API购买地址</div>
+                                    <a href="https://wang.aihaochi.com" target="_blank" rel="noopener noreferrer">https://wang.aihaochi.com</a>
+                                </div>
+                            </div>
+                            <div class="registration-actions">
+                                <div id="registerButton" class="menu_button">注册</div>
+                                <div id="cancelRegisterButton" class="menu_button">返回登录</div>
                             </div>
                         </div>
                         <div class="neutral_warning" id="errorMessage">

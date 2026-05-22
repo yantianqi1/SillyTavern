@@ -67,6 +67,7 @@ import { UPLOADS_DIRECTORY } from './constants.js';
 
 // Routers
 import { router as usersPublicRouter } from './endpoints/users-public.js';
+import { router as cloudStRouter } from './endpoints/cloudst.js';
 import { init as statsInit, onExit as statsOnExit } from './endpoints/stats.js';
 import { checkForNewContent } from './endpoints/content-manager.js';
 import { init as settingsInit } from './endpoints/settings.js';
@@ -184,7 +185,9 @@ if (!cliArgs.disableCsrf) {
             req.session.csrfToken = token;
         },
         skipCsrfProtection: (req) => {
-            return cliArgs.enableCorsProxy ? /^\/proxy\//.test(req.path) : false;
+            const skipCorsProxy = cliArgs.enableCorsProxy && /^\/proxy\//.test(req.path);
+            const skipCloudStInternal = /^\/api\/cloudst\//.test(req.path);
+            return skipCorsProxy || skipCloudStInternal;
         },
         size: 32,
     });
@@ -243,6 +246,7 @@ app.use(express.static(path.join(serverDirectory, 'public'), {}));
 
 // Public API
 app.use('/api/users', usersPublicRouter);
+app.use('/api/cloudst', cloudStRouter);
 
 // Everything below this line requires authentication
 app.use(requireLoginMiddleware);

@@ -1,34 +1,156 @@
+body.login {
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: hidden;
+    background:
+        linear-gradient(90deg, rgba(6, 8, 14, 0.16), rgba(6, 8, 14, 0.34)),
+        radial-gradient(circle at 72% 22%, rgba(255, 255, 255, 0.20), transparent 30%),
+        url("../img/login-background.jpg");
+    background-color: #080b12;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    color: #eef3f8;
+}
+
 body.login #shadow_popup {
     opacity: 1;
     display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: clamp(16px, 4vw, 58px);
+    background:
+        radial-gradient(circle at center, rgba(6, 10, 20, 0.20), rgba(4, 6, 12, 0.46));
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
 }
 
-body.login .logo {
-    max-width: 30px;
+body.login #dialogue_popup {
+    position: relative;
+    isolation: isolate;
+    top: auto;
+    left: auto;
+    right: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    width: min(480px, calc(100vw - 32px));
+    max-height: calc(100dvh - 32px);
+    margin: 0;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 8px;
+    background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.30), rgba(255, 255, 255, 0.11) 46%, rgba(121, 147, 180, 0.12));
+    box-shadow:
+        0 30px 90px rgba(0, 0, 0, 0.42),
+        inset 0 1px 0 rgba(255, 255, 255, 0.68),
+        inset 0 -26px 50px rgba(255, 255, 255, 0.08);
+    color: #f6f8fb;
+    transform: none;
+    backdrop-filter: blur(22px) saturate(170%);
+    -webkit-backdrop-filter: blur(22px) saturate(170%);
+}
+
+body.login #dialogue_popup::before,
+body.login #dialogue_popup::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+    z-index: -1;
+}
+
+body.login #dialogue_popup::before {
+    inset: 0;
+    border-radius: inherit;
+    background:
+        radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.46), transparent 33%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.22), transparent 42%);
+    opacity: 0.72;
+}
+
+body.login #dialogue_popup::after {
+    inset: 1px;
+    border-radius: 7px;
+    border: 1px solid rgba(255, 255, 255, 0.20);
+    box-shadow:
+        inset 10px 12px 22px rgba(255, 255, 255, 0.16),
+        inset -16px -18px 34px rgba(5, 8, 16, 0.18);
+}
+
+body.login #dialogue_popup_holder,
+body.login #dialogue_popup_text {
+    width: 100%;
+}
+
+body.login #dialogue_popup_text {
+    padding: 26px;
 }
 
 body.login #logoBlock {
     align-items: center;
     margin: 0 auto;
-    gap: 10px;
+    justify-content: center;
+    line-height: 1.2;
+}
+
+body.login .login-welcome-title {
+    color: #f8fbff;
+    font-family: "STKaiti", "KaiTi", "Kaiti SC", "Noto Serif CJK SC", "Microsoft YaHei", "Noto Sans", serif;
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: 0;
+    text-shadow: 0 8px 24px rgba(0, 0, 0, 0.34);
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+    body.login .login-welcome-title {
+        background: linear-gradient(90deg, #ffffff, #dce9ff 48%, #b9d5ff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+}
+
+body.login #normalLoginPrompt,
+body.login #discreetLoginPrompt,
+body.login #registerPrompt {
+    margin: 8px 0 18px;
+    color: rgba(241, 247, 255, 0.82);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+body.login #userList {
+    gap: 12px;
+    align-items: stretch;
 }
 
 body.login .userSelect {
     display: flex;
     flex-direction: column;
-    color: var(--SmartThemeBodyColor);
-    border: 1px solid var(--SmartThemeBorderColor);
-    border-radius: 5px;
-    padding: 3px 5px;
-    width: 30%;
+    color: #f5f8fc;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 8px;
+    padding: 10px;
+    width: min(30%, 180px);
+    min-width: 128px;
+    background: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.22);
     cursor: pointer;
-    margin: 5px 0;
-    transition: background-color var(--animation-duration) ease-in-out;
-    display: flex;
+    margin: 0;
+    transition: background-color var(--animation-duration) ease-in-out, border-color var(--animation-duration) ease-in-out, transform var(--animation-duration) ease-in-out;
     align-items: center;
     justify-content: center;
     text-align: center;
     overflow: hidden;
+}
+
+body.login .userSelect .avatar {
+    margin-bottom: 8px;
 }
 
 body.login .userSelect .userName,
@@ -40,11 +162,200 @@ body.login .userSelect .userHandle {
 }
 
 body.login .userSelect:hover {
-    background-color: var(--black30a);
+    border-color: rgba(255, 255, 255, 0.38);
+    background-color: rgba(255, 255, 255, 0.24);
+    transform: translateY(-2px);
+}
+
+body.login .text_pole {
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    background: rgba(7, 10, 18, 0.30);
+    color: #f7fbff;
+    box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.20), 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+body.login .text_pole::placeholder {
+    color: rgba(226, 236, 248, 0.68);
+}
+
+body.login #loginButton,
+body.login #registerButton {
+    border: 1px solid rgba(255, 255, 255, 0.30);
+    background: linear-gradient(180deg, rgba(233, 242, 255, 0.40), rgba(110, 141, 190, 0.34));
+    color: #ffffff;
+    box-shadow: 0 12px 28px rgba(8, 18, 36, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.32);
+}
+
+body.login #loginButton:hover,
+body.login #registerButton:hover {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.48), rgba(130, 164, 216, 0.42));
+}
+
+body.login .login-actions {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+body.login #loginButton {
+    min-width: 96px;
+    min-height: 34px;
+    margin: 0;
+    padding: 6px 18px;
+    white-space: nowrap;
+}
+
+body.login #registrationEntryBlock {
+    margin-top: 18px;
+}
+
+body.login #showRegisterButton,
+body.login #cancelRegisterButton {
+    border: 1px solid rgba(255, 255, 255, 0.26);
+    background: rgba(255, 255, 255, 0.16);
+    color: #eef6ff;
+    box-shadow: 0 10px 24px rgba(8, 18, 36, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+body.login #showRegisterButton:hover,
+body.login #cancelRegisterButton:hover {
+    background: rgba(255, 255, 255, 0.24);
+    border-color: rgba(255, 255, 255, 0.38);
+}
+
+body.login #errorMessage {
+    margin-top: 16px;
 }
 
 body.login #handleEntryBlock,
 body.login #passwordEntryBlock,
-body.login #passwordRecoveryBlock {
+body.login #registrationBlock {
+    gap: 10px;
     margin: 2px;
+}
+
+body.login #registrationBlock {
+    width: min(100%, 360px);
+}
+
+body.login #registrationBlock .text_pole {
+    width: 100%;
+}
+
+body.login .login-announcement {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    max-width: 420px;
+    margin: 12px auto 0;
+    padding: 12px 13px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 8px;
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.20), rgba(196, 216, 246, 0.12));
+    color: #edf5ff;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    text-align: left;
+    backdrop-filter: blur(10px) saturate(145%);
+    -webkit-backdrop-filter: blur(10px) saturate(145%);
+}
+
+body.login .registration-announcement {
+    margin-top: 4px;
+}
+
+body.login .login-announcement__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.18);
+    color: #f8fbff;
+}
+
+body.login .login-announcement__content {
+    min-width: 0;
+}
+
+body.login .login-announcement__eyebrow {
+    color: rgba(230, 241, 255, 0.76);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+body.login .login-announcement__title {
+    margin: 2px 0 4px;
+    font-weight: 800;
+}
+
+body.login .login-announcement a {
+    color: #d7e9ff;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+}
+
+body.login .registration-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    width: 100%;
+}
+
+body.login .registration-actions .menu_button {
+    width: 100%;
+    min-width: 0;
+    min-height: 34px;
+    margin: 0;
+    white-space: nowrap;
+}
+
+@media screen and (max-width: 520px) {
+    body.login {
+        overflow-y: auto;
+    }
+
+    body.login #shadow_popup {
+        justify-content: center;
+        padding: 14px;
+        background: rgba(3, 6, 13, 0.24);
+    }
+
+    body.login #dialogue_popup_text {
+        padding: 22px 16px;
+    }
+
+    body.login #logoBlock {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    body.login .login-welcome-title {
+        font-size: 1.58rem;
+    }
+
+    body.login #userList {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    body.login .userSelect {
+        width: min(100%, 280px);
+    }
+
+    body.login .login-announcement {
+        grid-template-columns: 30px minmax(0, 1fr);
+        max-width: 100%;
+        padding: 12px;
+    }
+
+    body.login .login-announcement__icon {
+        width: 30px;
+        height: 30px;
+    }
 }
