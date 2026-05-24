@@ -1,0 +1,263 @@
+# -- DATA CONFIGURATION --
+dataRoot: ./data
+
+# -- SERVER CONFIGURATION --
+# 云端 / Docker 对外访问必须开
+listen: true
+
+listenAddress:
+  ipv4: 0.0.0.0
+  ipv6: '[::]'
+
+protocol:
+  ipv4: true
+  ipv6: false
+
+dnsPreferIPv6: false
+
+# 云服务器 / Docker 环境不需要自动打开浏览器
+browserLaunch:
+  enabled: false
+  browser: 'default'
+  hostname: 'auto'
+  port: -1
+  avoidLocalhost: false
+
+# SillyTavern 服务端口，对应 docker-compose 里的 "8000:8000"
+port: 8000
+
+# 你 docker-compose 里已经用 SILLYTAVERN_HEARTBEATINTERVAL=30 覆盖了这个值
+heartbeatInterval: 0
+
+enableKeepAlive: false
+
+# -- SSL options --
+# 如果你直接用 IP:8000 访问，保持 false
+# 如果你后面用 Nginx / Cloudflare / 1Panel 反代 HTTPS，也保持 false，让反代负责 HTTPS
+ssl:
+  enabled: false
+  certPath: "./certs/cert.pem"
+  keyPath: "./certs/privkey.pem"
+  keyPassphrase: ""
+
+# -- SECURITY CONFIGURATION --
+
+# 云端多人登录不要用 IP 白名单限制，否则别人可能访问不了
+whitelistMode: false
+
+enableForwardedWhitelist: true
+
+whitelist:
+  - ::1
+  - 127.0.0.1
+
+whitelistDockerHosts: true
+
+# 重点：关闭全局 Basic Auth
+# 否则用户会先看到浏览器自带的账号密码弹窗，不是 SillyTavern 的多人用户选择页
+basicAuthMode: false
+
+# Basic Auth 已关闭，这里留空即可
+# 不要继续放你之前那个明文密码
+basicAuthUser:
+  username: ""
+  password: ""
+
+enableCorsProxy: false
+
+cors:
+  enabled: true
+  origin:
+    - "null"
+  methods:
+    - "OPTIONS"
+  allowedHeaders: []
+  exposedHeaders: []
+  credentials: false
+  maxAge: null
+
+# -- REQUEST PROXY CONFIGURATION --
+requestProxy:
+  enabled: false
+  url: "socks5://username:password@example.com:1080"
+  bypass:
+    - localhost
+    - 127.0.0.1
+
+# 重点：开启多人账号模式
+enableUserAccounts: true
+
+# 允许新用户在登录页自行注册普通账号
+enablePublicUserRegistration: true
+
+# 重点：false = 登录页显示用户列表，让每个人点自己的用户登录
+# true = 隐私模式，不显示用户列表，需要手动输入 handle
+enableDiscreetLogin: false
+
+# 不用 Basic Auth，所以这里保持 false
+perUserBasicAuth: false
+
+# -- SSO LOGIN CONFIGURATION --
+sso:
+  autheliaAuth: false
+  authentikAuth: false
+  trustedProxies:
+    - ::1
+    - 127.0.0.1
+
+# 如果你已经绑定域名，可以改成 true，并把域名填进 hosts
+# 例如 hosts:
+#   - tavern.example.com
+# 没有域名时先保持 false
+hostWhitelist:
+  enabled: false
+  scan: true
+  hosts: []
+
+# 云端开放时建议开启，减少 SSRF 风险
+privateAddressWhitelist:
+  enabled: true
+  allowUnresolvedHosts: false
+  log:
+    blockedRequests: true
+    allowedRequests: false
+  allowedRanges:
+    - '127.0.0.0/8'
+    - '::1/128'
+
+# -1 = 登录会话不过期
+# 多人云端建议可以改成 86400，也就是 24 小时
+sessionTimeout: 86400
+
+disableCsrfProtection: false
+securityOverride: false
+
+# -- LOGGING CONFIGURATION --
+logging:
+  enableAccessLog: true
+  minLogLevel: 1
+
+# -- RATE LIMITING CONFIGURATION --
+rateLimiting:
+  # 如果你前面有 Nginx / 1Panel / Cloudflare 反代，建议 true
+  # 如果你直接 IP:8000 访问，也可以用 false
+  preferRealIpHeader: true
+  basicAuthMaxAttempts: 5
+  accountsLoginMaxAttempts: 5
+  accountsRecoverMaxAttempts: 5
+
+# 如果你用了 1Panel / Nginx / Cloudflare 反代，保留 true
+# 如果你完全裸 IP:8000 访问，也不影响
+forwardedHeaders:
+  xRealIp: true
+  xForwardedFor: true
+  cfConnectingIp: false
+
+## BACKUP CONFIGURATION
+backups:
+  allowFullDataBackup: true
+  common:
+    numberOfBackups: 50
+  chat:
+    enabled: true
+    checkIntegrity: true
+    maxTotalBackups: -1
+    throttleInterval: 10000
+
+# THUMBNAILING CONFIGURATION
+thumbnails:
+  enabled: true
+  format: "jpg"
+  quality: 95
+  dimensions: { 'bg': [160, 90], 'avatar': [96, 144], 'persona': [96, 144] }
+
+# PERFORMANCE-RELATED CONFIGURATION
+performance:
+  lazyLoadCharacters: false
+  memoryCacheCapacity: '100mb'
+  useDiskCache: true
+  requestCompression:
+    enabled: false
+    minPayloadSize: '256kb'
+    maxPayloadSize: '8mb'
+    timeout: 4000
+
+cacheBuster:
+  enabled: true
+  userAgentPattern: ''
+
+allowKeysExposure: false
+skipContentCheck: false
+
+whitelistImportDomains:
+  - localhost
+  - cdn.discordapp.com
+  - files.catbox.moe
+  - raw.githubusercontent.com
+
+requestOverrides: []
+
+# -- API CONNECTION CONFIGURATION --
+# 禁用的聊天补全来源。这里填写“聊天补全来源”的内部 ID。
+# 被禁用的来源会从“API连接配置 > 聊天补全来源”下拉里隐藏，
+# 后端也会拒绝该来源的 /status 和 /generate 请求。
+# 留空数组 [] 表示配置层不禁用任何来源；源码里不存在的来源不会被此配置恢复。
+apiConnections:
+  disabledChatCompletionSources:
+    - dreamer
+
+# EXTENSIONS CONFIGURATION
+extensions:
+  enabled: true
+  autoUpdate: true
+  models:
+    autoDownload: true
+    classification: Cohee/distilbert-base-uncased-go-emotions-onnx
+    captioning: Xenova/vit-gpt2-image-captioning
+    embedding: Cohee/jina-embeddings-v2-base-en
+    speechToText: Xenova/whisper-small
+    textToSpeech: Xenova/speecht5_tts
+
+git:
+  backend: auto
+
+enableDownloadableTokenizers: true
+
+# -- OPENAI CONFIGURATION --
+promptPlaceholder: "[Start a new chat]"
+
+openai:
+  randomizeUserId: false
+  captionSystemPrompt: ""
+
+# -- DEEPL TRANSLATION CONFIGURATION --
+deepl:
+  formality: default
+
+# -- MISTRAL API CONFIGURATION --
+mistral:
+  enablePrefix: false
+
+# -- OLLAMA API CONFIGURATION --
+ollama:
+  keepAlive: -1
+  batchSize: -1
+
+# -- ANTHROPIC CLAUDE API CONFIGURATION --
+claude:
+  enableSystemPromptCache: false
+  cachingAtDepth: -1
+  extendedTTL: false
+  enableAdaptiveThinking: false
+
+# -- GOOGLE GEMINI API CONFIGURATION --
+gemini:
+  apiVersion: 'v1beta'
+  thoughtSignatures: true
+  enableSystemPromptCache: false
+  image:
+    personGeneration: 'allow_adult'
+
+# -- SERVER PLUGIN CONFIGURATION --
+enableServerPlugins: false
+enableServerPluginsAutoUpdate: true

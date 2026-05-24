@@ -10,6 +10,7 @@ import { SETTINGS_FILE } from '../constants.js';
 import { getConfigValue, generateTimestamp, removeOldBackups } from '../util.js';
 import { getAllUserHandles, getUserDirectories } from '../users.js';
 import { getFileNameValidationFunction } from '../middleware/validateFileName.js';
+import { getChatCompletionSourcePolicy } from '../chat-completion-source-policy.js';
 
 const ENABLE_EXTENSIONS = !!getConfigValue('extensions.enabled', true, 'boolean');
 const ENABLE_EXTENSIONS_AUTO_UPDATE = !!getConfigValue('extensions.autoUpdate', true, 'boolean');
@@ -291,6 +292,9 @@ router.post('/get', (request, response) => {
             minPayloadSize: REQUEST_COMPRESSION_MIN || 0,
             maxPayloadSize: REQUEST_COMPRESSION_MAX || 0,
             timeout: REQUEST_COMPRESSION_TIMEOUT || 0,
+        },
+        clientConfig: {
+            apiConnections: getChatCompletionSourcePolicy(),
         },
     });
 });

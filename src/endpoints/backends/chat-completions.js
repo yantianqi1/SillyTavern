@@ -65,6 +65,7 @@ import {
     getWebTokenizer,
 } from '../tokenizers.js';
 import { getVertexAIAuth, getProjectIdFromServiceAccount } from '../google.js';
+import { isChatCompletionSourceDisabled } from '../../chat-completion-source-policy.js';
 
 const API_OPENAI = 'https://api.openai.com/v1';
 const API_CLAUDE = 'https://api.anthropic.com/v1';
@@ -1732,9 +1733,25 @@ async function sendAzureOpenAIRequest(request, response) {
 
 export const router = express.Router();
 
+/**
+ * Sends an explicit error when a source is disabled by server config.
+ * @param {express.Response} response Express response
+ * @param {unknown} source Chat completion source ID
+ * @returns {express.Response} Express response
+ */
+function sendDisabledChatCompletionSourceError(response, source) {
+    const sourceId = typeof source === 'string' ? source : 'unknown';
+    const message = `Chat completion source "${sourceId}" is disabled by server config.`;
+    console.warn(message);
+    return response.status(400).send({ error: true, message });
+}
+
 router.post('/status', async function (request, statusResponse) {
     try {
         if (!request.body) return statusResponse.sendStatus(400);
+        if (isChatCompletionSourceDisabled(request.body.chat_completion_source)) {
+            return sendDisabledChatCompletionSourceError(statusResponse, request.body.chat_completion_source);
+        }
 
         let apiUrl = '';
         let apiKey = '';
@@ -2157,6 +2174,9 @@ router.post('/bias', async function (request, response) {
 router.post('/generate', async function (request, response) {
     try {
         if (!request.body) return response.status(400).send({ error: true });
+        if (isChatCompletionSourceDisabled(request.body.chat_completion_source)) {
+            return sendDisabledChatCompletionSourceError(response, request.body.chat_completion_source);
+        }
 
         const postProcessingType = request.body.custom_prompt_post_processing;
         if (Array.isArray(request.body.messages) && postProcessingType) {

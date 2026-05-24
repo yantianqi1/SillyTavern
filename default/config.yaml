@@ -293,6 +293,12 @@ whitelistImportDomains:
 ##     User-Agent: "Googlebot/2.1 (+http://www.google.com/bot.html)"
 requestOverrides: []
 
+# -- API CONNECTION CONFIGURATION --
+# Chat completion source IDs disabled by the server.
+# Disabled sources are hidden from the API connection selector and rejected by backend requests.
+apiConnections:
+  disabledChatCompletionSources: []
+
 # EXTENSIONS CONFIGURATION
 extensions:
   # Enable UI extensions

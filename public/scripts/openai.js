@@ -509,6 +509,7 @@ const default_settings = {
 };
 
 const oai_settings = structuredClone(default_settings);
+const disabledChatCompletionSources = new Set();
 
 export let proxies = [
     {
@@ -4212,6 +4213,74 @@ function migrateChatCompletionSettings(settings) {
 }
 
 /**
+ * Reads disabled source IDs from the server settings payload.
+ * @param {any} data Settings payload
+ * @returns {string[]} Disabled source IDs
+ */
+function getDisabledChatCompletionSources(data) {
+    const sources = data?.clientConfig?.apiConnections?.disabledChatCompletionSources ?? [];
+    if (!Array.isArray(sources)) {
+        throw new Error('clientConfig.apiConnections.disabledChatCompletionSources must be an array');
+    }
+
+    return sources.map(source => {
+        if (typeof source !== 'string' || source.trim() === '') {
+            throw new Error('clientConfig.apiConnections.disabledChatCompletionSources must contain non-empty strings');
+        }
+
+        return source.trim().toLowerCase();
+    });
+}
+
+function isChatCompletionSourceDisabled(source) {
+    return typeof source === 'string' && disabledChatCompletionSources.has(source.trim().toLowerCase());
+}
+
+function isSourceOptionAvailable(source) {
+    if (typeof source !== 'string') {
+        return false;
+    }
+
+    const option = $(`#chat_completion_source option[value="${CSS.escape(source)}"]`)[0];
+    return Boolean(option && !option.disabled && !option.hidden);
+}
+
+function getFirstEnabledChatCompletionSource() {
+    const option = $('#chat_completion_source option').toArray()
+        .find(option => !option.disabled && !option.hidden);
+
+    return option ? String(option.value) : null;
+}
+
+function applyDisabledChatCompletionSources(data) {
+    disabledChatCompletionSources.clear();
+    for (const source of getDisabledChatCompletionSources(data)) {
+        disabledChatCompletionSources.add(source);
+    }
+
+    $('#chat_completion_source option').each(function () {
+        const source = String($(this).val());
+        const disabled = isChatCompletionSourceDisabled(source);
+        $(this).prop('disabled', disabled).prop('hidden', disabled).toggle(!disabled);
+    });
+}
+
+function normalizeChatCompletionSourceSelection() {
+    if (isSourceOptionAvailable(oai_settings.chat_completion_source)) {
+        return;
+    }
+
+    const replacement = getFirstEnabledChatCompletionSource();
+    if (!replacement) {
+        throw new Error('apiConnections.disabledChatCompletionSources disables every chat completion source');
+    }
+
+    console.warn(`Chat completion source "${oai_settings.chat_completion_source}" is disabled or unavailable by server config. Switching to "${replacement}".`);
+    oai_settings.chat_completion_source = replacement;
+    $('#chat_completion_source').val(replacement);
+}
+
+/**
  * Load OpenAI settings from backend data
  * @param {any} data Settings data from backend
  * @param {ChatCompletionSettings} settings Saved settings from backend
@@ -4235,6 +4304,7 @@ function loadOpenAISettings(data, settings) {
     openai_setting_names = settingNames;
 
     migrateChatCompletionSettings(settings);
+    applyDisabledChatCompletionSources(data);
 
     for (const key of Object.keys(default_settings)) {
         oai_settings[key] = settings[key] ?? default_settings[key];
@@ -4296,6 +4366,7 @@ function loadOpenAISettings(data, settings) {
     setContinuePostfixControls();
     setToolReasoningControls();
     ToolManager.RECURSE_LIMIT = oai_settings.tool_call_recurse_limit;
+    normalizeChatCompletionSourceSelection();
 
     $('#openrouter_providers_chat').trigger('change');
     $('#openrouter_quantizations_chat').trigger('change');
@@ -5703,7 +5774,7 @@ async function onModelChange() {
         $('#temp_openai').attr('max', oai_max_temp).val(oai_settings.temp_openai).trigger('input');
     }
 
-    if (oai_settings.chat_completion_source == chat_completion_sources.CUSTOM) {
+    if (oai_settings.chat_completion_source === chat_completion_sources.CUSTOM) {
         $('#openai_max_context').attr('max', unlocked_max);
         oai_settings.openai_max_context = Math.min(Number($('#openai_max_context').attr('max')), oai_settings.openai_max_context);
         $('#openai_max_context').val(oai_settings.openai_max_context).trigger('input');
@@ -6832,7 +6903,11 @@ export function initOpenAI() {
     $('#chat_completion_source').on('change', function () {
         cancelStatusCheck('Chat Completion source changed');
         model_list = [];
-        oai_settings.chat_completion_source = String($(this).find(':selected').val());
+        const selectedSource = String($(this).find(':selected').val());
+        oai_settings.chat_completion_source = selectedSource;
+        if (isChatCompletionSourceDisabled(selectedSource) || !isSourceOptionAvailable(selectedSource)) {
+            normalizeChatCompletionSourceSelection();
+        }
         toggleChatCompletionForms();
         saveSettingsDebounced();
         reconnectOpenAi();
