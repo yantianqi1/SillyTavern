@@ -43,6 +43,8 @@
     <link rel="stylesheet" type="text/css" href="css/select2-overrides.css">
     <link rel="stylesheet" type="text/css" href="css/mobile-styles.css">
     <link rel="stylesheet" type="text/css" href="css/macros.css">
+    <link rel="stylesheet" type="text/css" href="css/character-store.css">
+    <link rel="stylesheet" type="text/css" href="css/character-store-cards.css">
     <link rel="stylesheet" type="text/css" href="css/user.css">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <!-- Scripts are loaded at the end of the body to improve page load speed -->
@@ -5989,6 +5991,11 @@
                 <div id="rightNavDrawerIcon" class="drawer-icon fa-solid fa-address-card fa-fw closedIcon" title="Character Management" data-i18n="[title]Character Management">
                 </div>
             </div>
+            <button id="character_store_sidebar_entry" class="character_store_sidebar_entry" type="button" title="角色卡商店" aria-label="打开角色卡商店">
+                <span class="character_store_sidebar_icon fa-solid fa-store"></span>
+                <span class="character_store_sidebar_label">角色卡商店</span>
+                <span class="character_store_sidebar_hint">Sheet</span>
+            </button>
             <nav id="right-nav-panel" class="drawer-content closedDrawer fillRight">
                 <div id="right-nav-panelheader" class="fa-solid fa-grip drag-grabber">
                 </div>
@@ -6355,6 +6362,7 @@
                             <div id="rm_button_bar">
                                 <div id="rm_button_create" title="Create New Character" data-i18n="[title]Create New Character" class="menu_button fa-solid fa-user-plus"></div>
                                 <div id="character_import_button" title="Import Character from File" data-i18n="[title]Import Character from File" class="menu_button fa-solid fa-file-import"></div>
+                                <div id="rm_button_character_store" title="角色卡商店" class="menu_button fa-solid fa-store"></div>
                                 <div id="external_import_button" title="Import content from external URL" data-i18n="[title]Import content from external URL" class="menu_button fa-solid fa-cloud-arrow-down"></div>
                                 <div id="rm_button_group_chats" title="Create New Chat Group" data-i18n="[title]Create New Chat Group" class="menu_button fa-solid fa-users-gear"></div>
                                 <div id="rm_buttons_container">
@@ -6396,6 +6404,30 @@
                     </div>
                 </div>
             </nav>
+        </div>
+    </div>
+    <div id="character_store_modal_overlay" class="character_store_modal_overlay" style="display: none;" aria-hidden="true">
+        <div name="Character Store Panel" id="rm_character_store_block" class="character_store_modal flex-container flexFlowColumn" role="dialog" aria-modal="true" aria-labelledby="character_store_title">
+            <div id="character_store_fixed_top" class="flex-container flexFlowColumn">
+                <div class="character_store_showcase">
+                    <div class="character_store_showcase_icon fa-solid fa-store"></div>
+                    <div class="character_store_showcase_copy">
+                        <strong id="character_store_title">角色卡商店</strong>
+                        <small>Sheet Collection</small>
+                    </div>
+                    <div class="character_store_showcase_actions">
+                        <span id="character_store_count" class="character_store_count">0/0</span>
+                        <div id="character_store_loading" class="fa-solid fa-spinner fa-spin" style="display: none;"></div>
+                        <button id="character_store_refresh" class="menu_button fa-solid fa-rotate-right" type="button" title="刷新"></button>
+                        <button id="character_store_close" class="menu_button fa-solid fa-xmark" type="button" title="关闭"></button>
+                    </div>
+                </div>
+                <div class="character_store_controls">
+                    <input id="character_store_search" class="text_pole textarea_compact" type="search" placeholder="搜索角色卡" />
+                </div>
+                <div id="character_store_tags" class="character_store_tags"></div>
+            </div>
+            <div id="character_store_list" class="character_store_list"></div>
         </div>
     </div>
     <!-- various fullscreen popups -->
