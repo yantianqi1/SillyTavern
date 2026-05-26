@@ -127,6 +127,27 @@
     text-align: center;
 }
 
+.character_store_pagination {
+    align-items: center;
+    display: flex;
+    flex: 0 0 auto;
+    gap: 8px;
+    justify-content: center;
+    min-height: 38px;
+    padding-top: 2px;
+}
+
+.character_store_page {
+    min-width: 42px;
+    padding-inline: 10px;
+}
+
+.character_store_page.active {
+    border-color: var(--SmartThemeQuoteColor);
+    color: var(--SmartThemeQuoteColor);
+    font-weight: 700;
+}
+
 @media screen and (max-width: 600px) {
     .character_store_sidebar_entry {
         min-height: 132px;
@@ -171,5 +192,14 @@
     .character_store_list {
         grid-auto-rows: 244px;
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .character_store_pagination {
+        gap: 5px;
+    }
+
+    .character_store_page {
+        min-width: 36px;
+        padding-inline: 7px;
     }
 }

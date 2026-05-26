@@ -21,12 +21,22 @@ export function getCharacterStoreRoot(dataRoot = globalThis.DATA_ROOT) {
     return path.resolve(dataRoot, SHEET_DIRECTORY);
 }
 
-export async function scanCharacterStore({ sheetRoot, dbPath = null }) {
+export async function scanCharacterStore({ sheetRoot, dbPath = null, listOptions = {} }) {
     const resolvedSheetRoot = path.resolve(sheetRoot);
     const index = await openCharacterStoreIndex(resolveDatabasePath(resolvedSheetRoot, dbPath));
     try {
         await syncCharacterStoreIndex({ sheetRoot: resolvedSheetRoot, index });
-        return index.listStore();
+        return index.listStore(listOptions);
+    } finally {
+        index.close();
+    }
+}
+
+export async function listCharacterStore({ sheetRoot, dbPath = null, listOptions = {} }) {
+    const resolvedSheetRoot = path.resolve(sheetRoot);
+    const index = await openCharacterStoreIndex(resolveDatabasePath(resolvedSheetRoot, dbPath));
+    try {
+        return index.listStore(listOptions);
     } finally {
         index.close();
     }

@@ -1,4 +1,6 @@
 export const STORE_TAG_PREVIEW_LIMIT = 10;
+export const STORE_PAGE_SIZE = 60;
+export const STORE_PAGE_WINDOW_SIZE = 3;
 
 export function filterStoreCards(cards, { search = '', tags = [] } = {}) {
     const query = search.trim().toLowerCase();
@@ -56,6 +58,26 @@ export function getVisibleStoreTagStats({
 
 export function getHiddenStoreTagCount(tagStats = [], visibleTagStats = []) {
     return Math.max(tagStats.length - visibleTagStats.length, 0);
+}
+
+export function getStorePageWindow({
+    page = 1,
+    totalPages = 1,
+    windowSize = STORE_PAGE_WINDOW_SIZE,
+} = {}) {
+    const size = Math.max(1, windowSize);
+    const lastPage = Math.max(1, totalPages);
+    const currentPage = Math.min(Math.max(1, page), lastPage);
+    const halfWindow = Math.floor(size / 2);
+    const maxStart = Math.max(1, lastPage - size + 1);
+    const start = Math.min(Math.max(1, currentPage - halfWindow), maxStart);
+    const end = Math.min(lastPage, start + size - 1);
+    return Array.from({ length: end - start + 1 }, (_value, index) => start + index);
+}
+
+export function pruneStorePageCache(pageCache, pageWindow) {
+    const allowedPages = new Set(pageWindow);
+    return new Map([...pageCache.entries()].filter(([page]) => allowedPages.has(page)));
 }
 
 function cardMatches(card, { query, tags }) {

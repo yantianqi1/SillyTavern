@@ -1,12 +1,11 @@
 import {
-    filterStoreCards,
-    getHiddenStoreTagCount,
-    getStoreCardSummaryDisplay,
-    getStoreCardTagsDisplay,
-    getStoreTagStats,
-    getVisibleStoreTagStats,
+    getStorePageWindow,
     prepareStoreCards,
+    pruneStorePageCache,
+    STORE_PAGE_SIZE,
 } from './character-store-data.js';
+import { renderStoreCard, renderStoreEmptyState } from './character-store-card-renderer.js';
+import { renderStorePagination, renderStoreTags as renderTagControls } from './character-store-controls-renderer.js';
 
 export * from './character-store-data.js';
 
@@ -14,10 +13,14 @@ const STORE_LIST_ENDPOINT = '/api/characters/store/list';
 const STORE_IMPORT_ENDPOINT = '/api/characters/store/import';
 const STORE_PREVIEW_ENDPOINT = '/api/characters/store/preview';
 const STORE_MODAL_OVERLAY_ID = 'character_store_modal_overlay';
+const SEARCH_DEBOUNCE_MS = 180;
 
 let dependencies = null;
+let searchInputTimer = null;
+let storeRequestId = 0;
 const storeState = {
-    cards: [],
+    pages: new Map(),
+    pagination: { page: 1, pageSize: STORE_PAGE_SIZE, total: 0, totalPages: 1 },
     tagStats: [],
     selectedTags: new Set(),
     search: '',
@@ -35,6 +38,7 @@ export function initCharacterStore(deps) {
     $(document).on('click', '.character_store_tag', onTagClick);
     $(document).on('click', '.character_store_tags_toggle', onTagsToggleClick);
     $(document).on('click', '.character_store_add', onAddClick);
+    $(document).on('click', '.character_store_page', onPageClick);
 }
 
 async function openCharacterStore(event) {
@@ -61,24 +65,89 @@ function onStoreKeydown(event) {
     }
 }
 
-async function loadCharacterStore() {
+async function loadCharacterStore({ page = 1, refresh = true } = {}) {
     setStoreBusy(true);
+    const requestId = storeRequestId += 1;
+    const queryKey = getStoreQueryKey();
     try {
-        const response = await fetch(STORE_LIST_ENDPOINT, {
-            method: 'POST',
-            headers: dependencies.getRequestHeaders(),
-        });
-        const data = await readJsonResponse(response);
-        storeState.cards = Array.isArray(data.cards) ? prepareStoreCards(data.cards) : [];
-        storeState.tagStats = getStoreTagStats(storeState.cards);
+        const data = await requestStorePage(page, { refresh });
+        if (requestId !== storeRequestId || queryKey !== getStoreQueryKey()) {
+            return;
+        }
+        storeState.pages = new Map();
+        applyStorePage(data);
         retainAvailableSelectedTags();
         renderStore();
+        void preloadStorePageWindow(queryKey, requestId);
     } catch (error) {
         console.error('Failed to load character store.', error);
         toastr.error(error.message || String(error));
     } finally {
         setStoreBusy(false);
     }
+}
+
+async function requestStorePage(page, { refresh = false } = {}) {
+    const response = await fetch(STORE_LIST_ENDPOINT, {
+        method: 'POST',
+        headers: dependencies.getRequestHeaders(),
+        body: JSON.stringify({
+            page,
+            page_size: STORE_PAGE_SIZE,
+            refresh,
+            search: storeState.search,
+            tags: [...storeState.selectedTags],
+        }),
+    });
+    return await readJsonResponse(response);
+}
+
+function applyStorePage(data, { activate = true } = {}) {
+    const pagination = data?.pagination || {};
+    const page = Number(pagination.page) || 1;
+    storeState.pagination = {
+        page: activate ? page : storeState.pagination.page,
+        pageSize: Number(pagination.pageSize) || STORE_PAGE_SIZE,
+        total: Number(pagination.total) || 0,
+        totalPages: Number(pagination.totalPages) || 1,
+    };
+    storeState.pages.set(page, prepareStoreCards(Array.isArray(data.cards) ? data.cards : []));
+    storeState.tagStats = Array.isArray(data.tagStats) ? data.tagStats : [];
+}
+
+async function preloadStorePageWindow(queryKey, requestId = storeRequestId) {
+    const pageWindow = getCurrentPageWindow();
+    const missingPages = pageWindow.filter(page => !storeState.pages.has(page));
+    trimStorePageCache(pageWindow);
+    try {
+        const pages = await Promise.all(missingPages.map(page => requestStorePage(page)));
+        if (queryKey !== getStoreQueryKey() || requestId !== storeRequestId) {
+            return;
+        }
+        pages.forEach(data => applyStorePage(data, { activate: false }));
+        trimStorePageCache(pageWindow);
+        renderPagination();
+    } catch (error) {
+        console.error('Failed to preload character store pages.', error);
+    }
+}
+
+function getCurrentPageWindow() {
+    return getStorePageWindow({
+        page: storeState.pagination.page,
+        totalPages: storeState.pagination.totalPages,
+    });
+}
+
+function trimStorePageCache(pageWindow = getCurrentPageWindow()) {
+    storeState.pages = pruneStorePageCache(storeState.pages, pageWindow);
+}
+
+function getStoreQueryKey() {
+    return JSON.stringify({
+        search: storeState.search,
+        tags: [...storeState.selectedTags].sort(),
+    });
 }
 
 async function readJsonResponse(response) {
@@ -100,7 +169,10 @@ function retainAvailableSelectedTags() {
 
 function onSearchInput() {
     storeState.search = String($('#character_store_search').val() || '');
-    renderCards();
+    clearTimeout(searchInputTimer);
+    searchInputTimer = setTimeout(() => {
+        void loadCharacterStore({ page: 1, refresh: false });
+    }, SEARCH_DEBOUNCE_MS);
 }
 
 function onTagClick() {
@@ -112,7 +184,7 @@ function onTagClick() {
         ? storeState.selectedTags.delete(tag)
         : storeState.selectedTags.add(tag);
     renderStoreTags();
-    renderCards();
+    void loadCharacterStore({ page: 1, refresh: false });
 }
 
 function onTagsToggleClick(event) {
@@ -128,6 +200,24 @@ async function onAddClick() {
         return;
     }
     await importCard(cardId, button);
+}
+
+function onPageClick(event) {
+    event?.preventDefault();
+    const button = $(this);
+    const page = Number(button.data('page'));
+    if (!Number.isInteger(page) || button.hasClass('disabled')) {
+        return;
+    }
+    if (storeState.pages.has(page)) {
+        storeState.pagination = { ...storeState.pagination, page };
+        trimStorePageCache();
+        renderCards();
+        renderPagination();
+        void preloadStorePageWindow(getStoreQueryKey(), storeRequestId);
+        return;
+    }
+    void loadCharacterStore({ page, refresh: false });
 }
 
 async function importCard(cardId, button) {
@@ -152,118 +242,44 @@ async function importCard(cardId, button) {
 function renderStore() {
     renderStoreTags();
     renderCards();
+    renderPagination();
 }
 
 function renderStoreTags() {
-    const container = $('#character_store_tags').empty();
-    container.toggleClass('expanded', storeState.tagsExpanded);
-    if (!storeState.tagStats.length) {
-        return;
-    }
-
-    const visibleTagStats = getVisibleStoreTagStats({
+    renderTagControls($('#character_store_tags'), {
         tagStats: storeState.tagStats,
-        expanded: storeState.tagsExpanded,
+        tagsExpanded: storeState.tagsExpanded,
+        selectedTags: storeState.selectedTags,
     });
-    container.append(renderTagList(visibleTagStats));
-
-    const hiddenCount = getHiddenStoreTagCount(storeState.tagStats, visibleTagStats);
-    if (hiddenCount > 0 || storeState.tagsExpanded) {
-        container.append(renderTagToggle(hiddenCount));
-    }
-}
-
-function renderTagList(tagStats) {
-    const list = $('<div></div>').addClass('character_store_tag_list');
-    for (const tagStat of tagStats) {
-        list.append(renderTagButton(tagStat));
-    }
-    return list;
-}
-
-function renderTagButton(tagStat) {
-    const active = storeState.selectedTags.has(tagStat.name);
-    return $('<button></button>')
-        .addClass(`character_store_tag ${active ? 'active' : ''}`)
-        .attr('type', 'button')
-        .attr('title', `${tagStat.name} (${tagStat.count})`)
-        .data('tag', tagStat.name)
-        .append($('<span></span>').addClass('character_store_tag_name').text(tagStat.name))
-        .append($('<span></span>').addClass('character_store_tag_count').text(tagStat.count));
-}
-
-function renderTagToggle(hiddenCount) {
-    const expanded = storeState.tagsExpanded;
-    const label = expanded ? '收起标签' : `展开 ${hiddenCount}`;
-    return $('<button></button>')
-        .addClass(`character_store_tags_toggle ${expanded ? 'expanded' : ''}`)
-        .attr('type', 'button')
-        .attr('title', expanded ? '收起标签' : `展开全部标签，可选 ${hiddenCount} 个`)
-        .attr('aria-label', expanded ? '收起标签列表' : `展开全部标签，剩余 ${hiddenCount} 个`)
-        .attr('aria-expanded', String(expanded))
-        .append($('<i></i>').addClass(`fa-solid ${expanded ? 'fa-chevron-up' : 'fa-chevron-down'}`))
-        .append($('<span></span>').addClass('character_store_tags_toggle_label').text(label));
 }
 
 function renderCards() {
-    const cards = filterStoreCards(storeState.cards, {
-        search: storeState.search,
-        tags: [...storeState.selectedTags],
-    });
-    $('#character_store_count').text(`${cards.length}/${storeState.cards.length}`);
+    const cards = storeState.pages.get(storeState.pagination.page) || [];
+    updateStoreCount(cards.length);
     const list = $('#character_store_list').empty();
-    cards.length ? cards.forEach(card => list.append(renderCard(card))) : renderEmptyState(list);
+    cards.length
+        ? cards.forEach(card => list.append(renderStoreCard(card, STORE_PREVIEW_ENDPOINT)))
+        : list.append(renderStoreEmptyState(getStoreEmptyMessage()));
 }
 
-function renderCard(card) {
-    const item = $('<div></div>').addClass('character_store_card');
-    const image = $('<img>').attr('src', getPreviewUrl(card)).attr('alt', card.name);
-    item.append($('<div></div>').addClass('character_store_avatar').append(image));
-    item.append(renderCardMeta(card));
-    item.append($('<button></button>')
-        .addClass('menu_button menu_button_icon character_store_add')
-        .attr('type', 'button')
-        .data('card-id', card.id)
-        .append($('<i></i>').addClass('fa-solid fa-plus'))
-        .append($('<small></small>').text('添加')));
-    return item;
+function updateStoreCount(visibleCount) {
+    const { page, total, totalPages } = storeState.pagination;
+    $('#character_store_count').text(`${visibleCount}/${total} · ${page}/${totalPages}`);
 }
 
-function renderCardMeta(card) {
-    const meta = $('<div></div>').addClass('character_store_meta');
-    meta.append($('<strong></strong>').text(card.name));
-    if (card.category) {
-        meta.append($('<span></span>').addClass('character_store_card_category').text(card.category));
-    }
-    const tags = getStoreCardTagsDisplay(card);
-    if (tags.length) {
-        meta.append(renderCardTags(tags));
-    }
-    const summary = getStoreCardSummaryDisplay(card);
-    if (summary) {
-        meta.append($('<p></p>').text(summary));
-    }
-    return meta;
+function getStoreEmptyMessage() {
+    return storeState.search || storeState.selectedTags.size
+        ? '没有匹配的角色卡'
+        : 'data/sheet 暂无角色卡';
 }
 
-function renderCardTags(tags) {
-    const container = $('<div></div>').addClass('character_store_card_tags');
-    for (const tag of tags) {
-        container.append($('<span></span>')
-            .addClass('character_store_card_tag')
-            .text(tag));
-    }
-    return container;
-}
-
-function renderEmptyState(list) {
-    list.append($('<div></div>')
-        .addClass('character_store_empty')
-        .text('data/sheet 暂无角色卡'));
-}
-
-function getPreviewUrl(card) {
-    return `${STORE_PREVIEW_ENDPOINT}/${encodeURIComponent(card.id)}`;
+function renderPagination() {
+    const { page, totalPages } = storeState.pagination;
+    renderStorePagination($('#character_store_pagination'), {
+        page,
+        totalPages,
+        pageWindow: getCurrentPageWindow(),
+    });
 }
 
 function setStoreBusy(isBusy) {

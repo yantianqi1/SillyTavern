@@ -33,6 +33,8 @@ CREATE TABLE IF NOT EXISTS store_card_errors (
 );
 
 CREATE INDEX IF NOT EXISTS idx_store_cards_category ON store_cards(category);
+CREATE INDEX IF NOT EXISTS idx_store_cards_name ON store_cards(name);
+CREATE INDEX IF NOT EXISTS idx_store_cards_sort ON store_cards(category COLLATE NOCASE, name COLLATE NOCASE);
 CREATE INDEX IF NOT EXISTS idx_store_tags_name ON store_tags(name);
 CREATE INDEX IF NOT EXISTS idx_store_card_tags_tag_id ON store_card_tags(tag_id);
 `;

@@ -148,6 +148,57 @@ describe('character card store', () => {
         expect(rows).toEqual([{ name: 'FreshTag' }]);
     });
 
+    test('returns paginated store cards with database totals', async () => {
+        for (let index = 1; index <= 7; index += 1) {
+            const name = `Card ${String(index).padStart(2, '0')}`;
+            writeCardPng(path.join(sheetRoot, 'space', 'pilots', `${name}.png`), {
+                ...CARD_JSON,
+                data: { ...CARD_JSON.data, name },
+            });
+        }
+
+        const result = await scanCharacterStore({
+            sheetRoot,
+            listOptions: { page: 2, pageSize: 3 },
+        });
+
+        expect(result.pagination).toEqual({
+            page: 2,
+            pageSize: 3,
+            total: 7,
+            totalPages: 3,
+        });
+        expect(result.cards.map(card => card.name)).toEqual(['Card 04', 'Card 05', 'Card 06']);
+    });
+
+    test('filters paginated store cards by search and tags in the sqlite index', async () => {
+        writeCardPng(path.join(sheetRoot, 'space', 'pilots', 'astra.png'), CARD_JSON);
+        writeCardPng(path.join(sheetRoot, 'space', 'pilots', 'lyra.png'), {
+            ...CARD_JSON,
+            data: {
+                ...CARD_JSON.data,
+                name: 'Lyra',
+                description: 'Mapmaker and archivist.',
+                tags: ['Fantasy', 'Archivist'],
+            },
+        });
+        fs.writeFileSync(path.join(sheetRoot, 'space', 'pilots', 'lyra.txt'), 'Mapmaker profile.');
+
+        const result = await scanCharacterStore({
+            sheetRoot,
+            listOptions: { page: 1, pageSize: 1, search: 'mapmaker', tags: ['Fantasy'] },
+        });
+
+        expect(result.pagination).toEqual({
+            page: 1,
+            pageSize: 1,
+            total: 1,
+            totalPages: 1,
+        });
+        expect(result.cards.map(card => card.name)).toEqual(['Lyra']);
+        expect(result.tagStats).toEqual(expect.arrayContaining([{ name: 'Fantasy', count: 1 }]));
+    });
+
     test('skips hidden directories and reports invalid cards without blocking valid cards', async () => {
         writeCardPng(path.join(sheetRoot, 'space', 'pilots', 'astra.png'), CARD_JSON);
         fs.mkdirSync(path.join(sheetRoot, '.claude'), { recursive: true });

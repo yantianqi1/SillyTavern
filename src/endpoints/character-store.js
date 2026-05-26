@@ -4,6 +4,7 @@ import {
     getCharacterStoreRoot,
     getStoreCardPreviewPath,
     importStoreCard,
+    listCharacterStore,
     scanCharacterStore,
 } from '../character-card-store.js';
 
@@ -11,11 +12,16 @@ export const router = express.Router();
 
 router.post('/list', async (_request, response) => {
     try {
-        const store = await scanCharacterStore({ sheetRoot: getCharacterStoreRoot() });
+        const listOptions = getStoreListOptions(_request.body);
+        const store = await getCharacterStoreList({
+            listOptions,
+            refresh: _request.body?.refresh !== false,
+        });
         return response.send(store);
     } catch (error) {
         console.error('Failed to list character store cards:', error);
-        return response.status(500).send({ error: true, message: String(error.message || error) });
+        const status = error instanceof TypeError ? 400 : 500;
+        return response.status(status).send({ error: true, message: String(error.message || error) });
     }
 });
 
@@ -51,3 +57,54 @@ router.get('/preview/:cardId', async (request, response) => {
         return response.status(404).send({ error: true, message: String(error.message || error) });
     }
 });
+
+async function getCharacterStoreList({ listOptions, refresh }) {
+    const loader = refresh ? scanCharacterStore : listCharacterStore;
+    return await loader({
+        sheetRoot: getCharacterStoreRoot(),
+        listOptions,
+    });
+}
+
+function getStoreListOptions(body = {}) {
+    if (body === null || Array.isArray(body) || typeof body !== 'object') {
+        throw new TypeError('Invalid character store list request.');
+    }
+    return {
+        page: getPositiveIntegerOption(body.page, 'page'),
+        pageSize: getPositiveIntegerOption(body.page_size ?? body.pageSize, 'page_size'),
+        search: getStringOption(body.search, 'search'),
+        tags: getTagsOption(body.tags),
+    };
+}
+
+function getPositiveIntegerOption(value, name) {
+    if (value === undefined) {
+        return undefined;
+    }
+    const number = Number(value);
+    if (!Number.isInteger(number) || number < 1) {
+        throw new TypeError(`Invalid character store ${name}.`);
+    }
+    return number;
+}
+
+function getStringOption(value, name) {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (typeof value !== 'string') {
+        throw new TypeError(`Invalid character store ${name}.`);
+    }
+    return value;
+}
+
+function getTagsOption(value) {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (!Array.isArray(value) || value.some(tag => typeof tag !== 'string')) {
+        throw new TypeError('Invalid character store tags.');
+    }
+    return value;
+}

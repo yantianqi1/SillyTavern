@@ -2,6 +2,7 @@ import { promises as fsPromises } from 'node:fs';
 import path from 'node:path';
 
 import { SCHEMA_SQL, UPSERT_CARD_SQL } from './character-store-sql.js';
+import { getTagsByCardIds, hydrateStoreCard, listStoreFromDatabase } from './character-store-list-query.js';
 
 const DATABASE_FILE = 'character-store.sqlite';
 
@@ -46,22 +47,11 @@ class CharacterStoreIndex {
 
     getCardById(cardId) {
         const card = this.db.prepare('SELECT * FROM store_cards WHERE id = ?').get(cardId);
-        return card ? hydrateCard(card, this.getTagsByCardIds([card.id])) : null;
+        return card ? hydrateStoreCard(card, getTagsByCardIds(this.db, [card.id])) : null;
     }
 
-    listStore() {
-        const cards = this.db.prepare(`
-            SELECT * FROM store_cards
-            ORDER BY category COLLATE NOCASE, name COLLATE NOCASE
-        `).all();
-        const tagsByCardId = this.getTagsByCardIds(cards.map(card => card.id));
-        const hydratedCards = cards.map(card => hydrateCard(card, tagsByCardId));
-        return {
-            cards: hydratedCards,
-            categories: uniqueSorted(hydratedCards.map(card => card.category).filter(Boolean)),
-            errors: this.listErrors(),
-            tags: uniqueSorted(hydratedCards.flatMap(card => card.tags)),
-        };
+    listStore(options = {}) {
+        return listStoreFromDatabase(this.db, options);
     }
 
     applySync({ cards, currentRelativePaths, errors = [] }) {
@@ -142,21 +132,6 @@ class CharacterStoreIndex {
         `).run();
     }
 
-    getTagsByCardIds(cardIds) {
-        if (cardIds.length === 0) {
-            return new Map();
-        }
-        const placeholders = cardIds.map(() => '?').join(',');
-        const rows = this.db.prepare(`
-            SELECT ct.card_id, t.name
-            FROM store_card_tags ct
-            JOIN store_tags t ON t.id = ct.tag_id
-            WHERE ct.card_id IN (${placeholders})
-            ORDER BY ct.card_id, ct.sort_order
-        `).all(...cardIds);
-        return groupTagRows(rows);
-    }
-
     replaceErrors(errors) {
         const paths = errors.map(error => error.relativePath);
         this.deleteMissingErrors(paths);
@@ -180,14 +155,6 @@ class CharacterStoreIndex {
         this.db.prepare(`DELETE FROM store_card_errors WHERE relative_path NOT IN (${placeholders})`)
             .run(...paths);
     }
-
-    listErrors() {
-        return this.db.prepare(`
-            SELECT relative_path AS relativePath, message
-            FROM store_card_errors
-            ORDER BY relative_path COLLATE NOCASE
-        `).all();
-    }
 }
 
 function ensureSchemaMigrations(db) {
@@ -208,30 +175,4 @@ function ensureColumns(db, tableName, migrations) {
             db.exec(migration.sql);
         }
     }
-}
-
-function groupTagRows(rows) {
-    const tagsByCardId = new Map();
-    for (const row of rows) {
-        const tags = tagsByCardId.get(row.card_id) ?? [];
-        tags.push(row.name);
-        tagsByCardId.set(row.card_id, tags);
-    }
-    return tagsByCardId;
-}
-
-function hydrateCard(card, tagsByCardId) {
-    return {
-        id: card.id,
-        category: card.category,
-        format: card.format,
-        name: card.name,
-        relativePath: card.relative_path,
-        summary: card.summary,
-        tags: tagsByCardId.get(card.id) ?? [],
-    };
-}
-
-function uniqueSorted(values) {
-    return [...new Set(values)].sort((left, right) => left.localeCompare(right));
 }

@@ -5,8 +5,10 @@ import {
     getHiddenStoreTagCount,
     getStoreCardTagsDisplay,
     getStoreCardSummaryDisplay,
+    getStorePageWindow,
     getStoreTagStats,
     getVisibleStoreTagStats,
+    pruneStorePageCache,
     prepareStoreCards,
 } from '../public/scripts/character-store.js';
 
@@ -88,5 +90,22 @@ describe('character store UI helpers', () => {
         expect(visibleStats.map(tagStat => tagStat.name)).not.toContain(selectedTag);
         expect(getHiddenStoreTagCount(tagStats, visibleStats)).toBe(totalTags - COLLAPSED_TAG_ROW_LIMIT);
         expect(getVisibleStoreTagStats({ tagStats, expanded: true })).toEqual(tagStats);
+    });
+
+    test('keeps pagination buttons and cache to a three page window', () => {
+        expect(getStorePageWindow({ page: 1, totalPages: 9 })).toEqual([1, 2, 3]);
+        expect(getStorePageWindow({ page: 5, totalPages: 9 })).toEqual([4, 5, 6]);
+        expect(getStorePageWindow({ page: 9, totalPages: 9 })).toEqual([7, 8, 9]);
+
+        const cache = new Map([
+            [1, [CARDS[0]]],
+            [2, [CARDS[1]]],
+            [3, []],
+            [4, []],
+        ]);
+        const pruned = pruneStorePageCache(cache, [2, 3, 4]);
+
+        expect([...pruned.keys()]).toEqual([2, 3, 4]);
+        expect([...cache.keys()]).toEqual([1, 2, 3, 4]);
     });
 });
