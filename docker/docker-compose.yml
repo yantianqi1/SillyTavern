@@ -1,9 +1,9 @@
 services:
   sillytavern:
-    build: ..
     container_name: sillytavern
     hostname: sillytavern
-    image: ghcr.io/sillytavern/sillytavern:latest
+    image: ghcr.io/yantianqi1/sillytavern:latest
+    pull_policy: always
     environment:
       - NODE_ENV=production
       - FORCE_COLOR=1
