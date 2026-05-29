@@ -11,6 +11,12 @@ import {
     pruneStorePageCache,
     prepareStoreCards,
 } from '../public/scripts/character-store.js';
+import {
+    FLOATING_ENTRY_DRAG_THRESHOLD_PX,
+    FLOATING_ENTRY_EDGE_GAP,
+    clampFloatingEntryPosition,
+    hasFloatingEntryDragMoved,
+} from '../public/scripts/character-store-floating-entry.js';
 
 const COLLAPSED_TAG_ROW_LIMIT = 10;
 
@@ -107,5 +113,33 @@ describe('character store UI helpers', () => {
 
         expect([...pruned.keys()]).toEqual([2, 3, 4]);
         expect([...cache.keys()]).toEqual([1, 2, 3, 4]);
+    });
+});
+
+describe('character store floating entry helpers', () => {
+    test('keeps a dragged entry inside viewport bounds', () => {
+        const position = clampFloatingEntryPosition({
+            x: 999,
+            y: -20,
+        }, {
+            entry: { width: 50, height: 132 },
+            viewport: { width: 360, height: 640 },
+        });
+
+        expect(position).toEqual({
+            x: 360 - 50 - FLOATING_ENTRY_EDGE_GAP,
+            y: FLOATING_ENTRY_EDGE_GAP,
+        });
+    });
+
+    test('distinguishes a click from a real drag', () => {
+        expect(hasFloatingEntryDragMoved(
+            { x: 20, y: 30 },
+            { x: 20 + FLOATING_ENTRY_DRAG_THRESHOLD_PX - 1, y: 30 },
+        )).toBe(false);
+        expect(hasFloatingEntryDragMoved(
+            { x: 20, y: 30 },
+            { x: 20 + FLOATING_ENTRY_DRAG_THRESHOLD_PX, y: 30 },
+        )).toBe(true);
     });
 });

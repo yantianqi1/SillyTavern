@@ -1,0 +1,19 @@
+.character_store_sidebar_entry {
+    touch-action: none;
+    user-select: none;
+}
+
+.character_store_sidebar_entry.character_store_sidebar_entry_positioned {
+    right: auto;
+    transform: none;
+}
+
+.character_store_sidebar_entry.character_store_sidebar_entry_positioned:hover {
+    transform: none;
+}
+
+.character_store_sidebar_entry.character_store_sidebar_entry_dragging {
+    cursor: grabbing;
+    transition: none;
+    will-change: left, top;
+}

@@ -6,6 +6,7 @@ import {
 } from './character-store-data.js';
 import { renderStoreCard, renderStoreEmptyState } from './character-store-card-renderer.js';
 import { renderStorePagination, renderStoreTags as renderTagControls } from './character-store-controls-renderer.js';
+import { initFloatingCharacterStoreEntry } from './character-store-floating-entry.js';
 
 export * from './character-store-data.js';
 
@@ -29,6 +30,7 @@ const storeState = {
 
 export function initCharacterStore(deps) {
     dependencies = deps;
+    initFloatingCharacterStoreEntry($('#character_store_sidebar_entry'));
     $('#rm_button_character_store, #character_store_sidebar_entry').on('click', openCharacterStore);
     $('#character_store_close').on('click', closeCharacterStore);
     $('#character_store_refresh').on('click', loadCharacterStore);
