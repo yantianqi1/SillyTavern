@@ -66,6 +66,7 @@ import {
 } from '../tokenizers.js';
 import { getVertexAIAuth, getProjectIdFromServiceAccount } from '../google.js';
 import { isChatCompletionSourceDisabled } from '../../chat-completion-source-policy.js';
+import { createOpenAIBackgroundJobsRouter } from '../../openai-background-jobs.js';
 
 const API_OPENAI = 'https://api.openai.com/v1';
 const API_CLAUDE = 'https://api.anthropic.com/v1';
@@ -1732,6 +1733,7 @@ async function sendAzureOpenAIRequest(request, response) {
 }
 
 export const router = express.Router();
+router.use('/jobs', createOpenAIBackgroundJobsRouter());
 
 /**
  * Sends an explicit error when a source is disabled by server config.
