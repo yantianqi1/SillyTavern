@@ -112,6 +112,7 @@ import {
     selected_proxy,
     initOpenAI,
 } from './scripts/openai.js';
+import { cancelOpenAIBackgroundJob, recoverOpenAIBackgroundJobs } from './scripts/openai-background-jobs.js';
 
 import {
     generateNovelWithStreaming,
@@ -423,6 +424,11 @@ let currentVersion = '0.0.0';
 export let displayVersion = 'SillyTavern';
 
 let generation_started = new Date();
+
+export function getGenerationStarted() {
+    return generation_started;
+}
+
 /** @type {Character[]} */
 export let characters = [];
 /**
@@ -5562,9 +5568,23 @@ export function stopGeneration() {
         hideStopButton();
         stopped = true;
     }
+    cancelOpenAIBackgroundJob().catch(console.warn);
     eventSource.emit(event_types.GENERATION_STOPPED);
     return stopped;
 }
+
+function recoverOpenAIBackgroundJobsQuietly() {
+    recoverOpenAIBackgroundJobs().catch(console.warn);
+}
+
+eventSource.on(event_types.APP_READY, recoverOpenAIBackgroundJobsQuietly);
+eventSource.on(event_types.CHAT_LOADED, recoverOpenAIBackgroundJobsQuietly);
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        recoverOpenAIBackgroundJobsQuietly();
+    }
+});
+window.addEventListener('pageshow', recoverOpenAIBackgroundJobsQuietly);
 
 /**
  * Injects extension prompts into chat messages.

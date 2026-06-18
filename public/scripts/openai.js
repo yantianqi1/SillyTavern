@@ -46,6 +46,7 @@ import { forceCharacterEditorTokenize, getCustomStoppingStrings, persona_descrip
 import { SECRET_KEYS, secret_state, writeSecret } from './secrets.js';
 
 import { getEventSourceStream } from './sse-stream.js';
+import { canUseOpenAIBackgroundGeneration, sendOpenAIBackgroundRequest } from './openai-background-jobs.js';
 import {
     clamp,
     createThumbnail,
@@ -3051,6 +3052,10 @@ async function sendOpenAIRequest(type, messages, signal, { jsonSchema = null } =
     const model = getChatCompletionModel(oai_settings);
     const { generate_data, stream, canMultiSwipe } = await createGenerationParameters(oai_settings, model, type, messages, { jsonSchema });
     await eventSource.emit(event_types.CHAT_COMPLETION_SETTINGS_READY, generate_data);
+
+    if (stream && canUseOpenAIBackgroundGeneration(type, generate_data)) {
+        return await sendOpenAIBackgroundRequest(type, generate_data, canMultiSwipe);
+    }
 
     const generate_url = '/api/backends/chat-completions/generate';
     const response = await fetch(generate_url, {

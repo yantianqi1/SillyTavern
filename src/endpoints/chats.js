@@ -464,7 +464,9 @@ export async function trySaveChat(chatData, filePath, skipIntegrityCheck = false
         throw new IntegrityMismatchError(`Chat integrity check failed for "${filePath}". The expected integrity slug was "${chatIntegritySlug}".`);
     }
     tryWriteFileSync(filePath, jsonlData);
-    getBackupFunction(handle)(backupDirectory, cardName, jsonlData);
+    if (isBackupEnabled) {
+        getBackupFunction(handle)(backupDirectory, cardName, jsonlData);
+    }
 }
 
 router.post('/save', validateAvatarUrlMiddleware, async function (request, response) {
