@@ -1,0 +1,219 @@
+/* Aiwan warm skin: CSS-only color layer. Do not change layout/structure here. */
+:root {
+    --SmartThemeBodyColor: rgba(54, 45, 38, 1) !important;
+    --SmartThemeEmColor: rgba(116, 99, 86, 1) !important;
+    --SmartThemeUnderlineColor: rgba(78, 119, 93, 1) !important;
+    --SmartThemeQuoteColor: rgba(151, 84, 67, 1) !important;
+    --SmartThemeBlurTintColor: rgba(255, 248, 236, 0.9) !important;
+    --SmartThemeChatTintColor: rgba(255, 243, 224, 0.76) !important;
+    --SmartThemeUserMesBlurTintColor: rgba(231, 244, 235, 0.72) !important;
+    --SmartThemeBotMesBlurTintColor: rgba(255, 252, 246, 0.76) !important;
+    --SmartThemeShadowColor: rgba(184, 133, 82, 0.14) !important;
+    --SmartThemeBorderColor: rgba(112, 76, 48, 0.24) !important;
+    --SmartThemeCheckboxTickColor: rgba(70, 106, 85, 1) !important;
+
+    --aiwan-body: rgba(54, 45, 38, 1);
+    --aiwan-muted: rgba(116, 99, 86, 1);
+    --aiwan-quote: rgba(151, 84, 67, 1);
+    --aiwan-border: rgba(112, 76, 48, 0.24);
+    --aiwan-blur-tint: rgba(255, 248, 236, 0.9);
+    --aiwan-chat-tint: rgba(255, 243, 224, 0.76);
+    --aiwan-user-tint: rgba(231, 244, 235, 0.72);
+    --aiwan-bot-tint: rgba(255, 252, 246, 0.76);
+    --aiwan-surface-strong: rgba(255, 252, 246, 0.82);
+    --aiwan-surface-soft: rgba(255, 244, 226, 0.58);
+    --aiwan-surface-hover: rgba(232, 245, 236, 0.72);
+    --aiwan-accent: rgba(70, 106, 85, 1);
+    --aiwan-accent-warm: rgba(151, 84, 67, 1);
+    --aiwan-shadow-soft: rgba(184, 133, 82, 0.12);
+    --aiwan-shadow-faint: rgba(184, 133, 82, 0.08);
+    --aiwan-highlight: rgba(255, 255, 255, 0.55);
+}
+
+body {
+    background-color: rgba(47, 36, 31, 1) !important;
+    color: var(--aiwan-body) !important;
+}
+
+#top-bar,
+#send_form,
+.drawer-content,
+.floatingPrompt,
+.ui-widget-content,
+.popup,
+#completion_prompt_manager,
+#dialogue_popup,
+#character_popup {
+    background-color: var(--aiwan-blur-tint) !important;
+    border-color: var(--aiwan-border) !important;
+    box-shadow: 0 14px 34px var(--aiwan-shadow-soft), inset 0 1px 0 var(--aiwan-highlight) !important;
+    color: var(--aiwan-body) !important;
+}
+
+#chat {
+    background-color: var(--aiwan-chat-tint) !important;
+    color: var(--aiwan-body) !important;
+}
+
+.mes {
+    color: var(--aiwan-body) !important;
+}
+
+.mes[is_user="true"] {
+    background-color: var(--aiwan-user-tint) !important;
+}
+
+.mes[is_user="false"],
+.mes[is_system="true"] {
+    background-color: var(--aiwan-bot-tint) !important;
+}
+
+.mes_block,
+.mes_text,
+.mes_reasoning,
+.ch_name,
+.drawer-content,
+.inline-drawer,
+.inline-drawer-header,
+.inline-drawer-content,
+.standoutHeader,
+.toggle-description,
+.notes-link,
+.note-link-span {
+    color: var(--aiwan-body) !important;
+    text-shadow: none !important;
+}
+
+.mes_text q,
+.mes_reasoning q,
+.mes_bias,
+.note-link-span,
+.inline-drawer-icon,
+.drawer-icon.openIcon {
+    color: var(--aiwan-quote) !important;
+}
+
+.mes .mes_timer,
+.mes .mesIDDisplay,
+.mes .tokenCounterDisplay,
+.timestamp,
+.extension_token_counter,
+.toggle-description {
+    color: var(--aiwan-muted) !important;
+}
+
+.text_pole,
+select,
+textarea,
+input[type="text"],
+input[type="search"],
+input[type="number"],
+input[type="password"],
+input[type="url"],
+input[type="email"] {
+    background-color: var(--aiwan-surface-strong) !important;
+    border-color: var(--aiwan-border) !important;
+    color: var(--aiwan-body) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+
+.text_pole::placeholder,
+textarea::placeholder,
+input::placeholder {
+    color: rgba(116, 99, 86, 0.62) !important;
+}
+
+.menu_button,
+.right_menu_button,
+.drawer-icon,
+.inline-drawer-maximize,
+.floating_panel_maximize,
+.floating_panel_close,
+.mes_button,
+.paginationjs-pages a {
+    background-color: var(--aiwan-surface-strong) !important;
+    border-color: var(--aiwan-border) !important;
+    color: var(--aiwan-body) !important;
+    text-shadow: none !important;
+    box-shadow: 0 5px 12px var(--aiwan-shadow-faint), inset 0 1px 0 var(--aiwan-highlight) !important;
+}
+
+.menu_button:not(.disabled):not([disabled]):hover,
+.menu_button:not(.disabled):not([disabled]).active,
+.right_menu_button:hover,
+.drawer-icon:hover,
+.mes_button:hover {
+    background-color: var(--aiwan-surface-hover) !important;
+    border-color: rgba(70, 106, 85, 0.34) !important;
+    color: var(--aiwan-accent) !important;
+}
+
+.inline-drawer,
+.standoutHeader,
+#extensions_settings .inline-drawer-toggle.inline-drawer-header,
+#extensions_settings2 .inline-drawer-toggle.inline-drawer-header,
+#user-settings-block h4,
+.standoutHeader.inline-drawer-header,
+.world_entry,
+.character_select,
+.group_select,
+.tag,
+.avatar-container,
+.completion_prompt_manager_prompt {
+    background-color: var(--aiwan-surface-soft) !important;
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(244, 226, 198, 0.1)) !important;
+    border-color: var(--aiwan-border) !important;
+    box-shadow: 0 5px 14px var(--aiwan-shadow-faint), inset 0 1px 0 rgba(255, 255, 255, 0.44) !important;
+}
+
+.neo-range-slider,
+input[type="range"] {
+    background: linear-gradient(90deg, rgba(70, 106, 85, 0.62), rgba(244, 226, 198, 0.82)) !important;
+    border-color: rgba(112, 76, 48, 0.22) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 2px 8px var(--aiwan-shadow-faint) !important;
+    filter: none !important;
+    accent-color: var(--aiwan-accent) !important;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    background: var(--aiwan-accent) !important;
+    border-color: rgba(255, 252, 246, 0.9) !important;
+    box-shadow: 0 2px 8px rgba(70, 106, 85, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.36) !important;
+}
+
+input[type="checkbox"] {
+    background-color: var(--aiwan-surface-strong) !important;
+    border-color: rgba(112, 76, 48, 0.28) !important;
+    outline-color: rgba(184, 133, 82, 0.16) !important;
+    box-shadow: inset 0 1px 0 var(--aiwan-highlight), 0 2px 7px var(--aiwan-shadow-faint) !important;
+    filter: none !important;
+    accent-color: var(--aiwan-accent) !important;
+}
+
+input[type="checkbox"]::before {
+    box-shadow: inset 1em 1em var(--aiwan-accent) !important;
+}
+
+input[type="checkbox"]:checked {
+    background-color: rgba(232, 245, 236, 0.92) !important;
+    border-color: rgba(70, 106, 85, 0.42) !important;
+}
+
+.menu_button.toggleable.toggled,
+.menu_button.toggleable.toggled::before,
+.right_menu_button.toggleEnabled,
+.tag.selected,
+.selected,
+#chat .mes.selected {
+    background-color: rgba(70, 106, 85, 0.2) !important;
+    border-color: rgba(70, 106, 85, 0.38) !important;
+    color: var(--aiwan-accent) !important;
+}
+
+.warning,
+.redWarningBG,
+.error,
+.menu_button.danger,
+.redOverlayGlow {
+    color: var(--aiwan-accent-warm) !important;
+}

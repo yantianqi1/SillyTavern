@@ -30,8 +30,8 @@
     <!-- fontawesome webfonts-->
     <link href="css/fontawesome.min.css" rel="stylesheet">
     <link href="css/solid.min.css" rel="stylesheet">
-    <link href="css/user.css" rel="stylesheet">
-    <title>忘忧酒馆</title>
+    <link href="css/user.css?v=aiwan-warm-20260628-3" rel="stylesheet">
+    <title>爱玩酒馆</title>
 </head>
 
 <body class="login">
@@ -40,69 +40,128 @@
             <div id="dialogue_popup_holder">
                 <div id="dialogue_popup_text">
                     <div id="userSelectBlock" class="flex-container flexFlowColumn alignItemsCenter">
-                        <h2 id="logoBlock" class="flex-container">
-                            <span class="login-welcome-title">欢迎登录忘忧酒馆</span>
-                        </h2>
-                        <h3 id="normalLoginPrompt">
-                            请输入账号密码
-                        </h3>
-                        <h3 id="discreetLoginPrompt" style="display:none;">
-                            请输入登录信息
-                        </h3>
-                        <h3 id="registerPrompt" style="display:none;">
-                            注册账号
-                        </h3>
-                        <div id="userListBlock" class="wide100p">
-                            <div id="userList" class="flex-container justifySpaceEvenly"></div>
-                            <div id="handleEntryBlock" class="flex-container flexFlowColumn alignItemsCenter">
-                                <input id="userHandle" class="text_pole" type="text" placeholder="账号" autocomplete="username">
-                            </div>
-                            <div id="passwordEntryBlock"
-                                class="flex-container flexFlowColumn alignItemsCenter">
-                                <input id="userPassword" class="text_pole" type="password" placeholder="密码" autocomplete="current-password">
-                                <div class="login-actions">
-                                    <div id="loginButton" class="menu_button">登录</div>
+                        <section class="login-brand-area" aria-labelledby="loginHeroTitle">
+                            <div id="logoBlock" class="login-brand-lockup">
+                                <span class="login-brand-mark" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M7.5 4.75h9l1.75 5.25c.8 2.4-.18 5.03-2.35 6.32L12 18.65l-3.9-2.33C5.93 15.03 4.95 12.4 5.75 10L7.5 4.75Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                                        <path d="M9.2 10.7h5.6M10.2 13.35h3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                                    </svg>
+                                </span>
+                                <div>
+                                    <p class="login-brand-name">爱玩酒馆</p>
+                                    <p class="login-brand-subtitle">把今晚的故事留给爱玩</p>
                                 </div>
                             </div>
-                            <div id="loginAnnouncement" class="login-announcement">
-                                <div class="login-announcement__icon">
-                                    <i class="fa-fw fa-solid fa-bullhorn"></i>
+
+                            <p class="login-hero-kicker">欢迎来到你的深夜酒馆</p>
+                            <h1 id="loginHeroTitle" class="login-hero-title">找个座位，今晚有人陪你聊。</h1>
+                            <p class="login-hero-copy">
+                                下班后的放空、睡前的一段闲谈、突然冒出来的脑洞，都可以在这里慢慢展开。爱玩酒馆给你一个轻松进来、自在停留的地方。
+                            </p>
+
+                            <div class="login-proof-list" aria-label="酒馆体验摘要">
+                                <div class="login-proof-item">
+                                    <p class="login-proof-label">随时开聊</p>
+                                    <p class="login-proof-value">打开酒馆，就回到熟悉的聊天氛围</p>
                                 </div>
-                                <div class="login-announcement__content">
-                                    <div class="login-announcement__eyebrow">公告</div>
-                                    <div class="login-announcement__title">API购买地址</div>
-                                    <a href="https://wang.aihaochi.com" target="_blank" rel="noopener noreferrer">https://wang.aihaochi.com</a>
+                                <div class="login-proof-item">
+                                    <p class="login-proof-label">沉浸氛围</p>
+                                    <p class="login-proof-value">像走进一间只为你亮灯的小酒馆</p>
                                 </div>
-                            </div>
-                        </div>
-                        <div id="registrationEntryBlock" class="flex-container justifyCenter">
-                            <div id="showRegisterButton" class="menu_button menu_button_icon">
-                                <i class="fa-fw fa-solid fa-user-plus"></i>
-                                <span>注册账号</span>
-                            </div>
-                        </div>
-                        <div id="registrationBlock" style="display:none;" class="flex-container flexFlowColumn alignItemsCenter">
-                            <input id="registerName" class="text_pole" type="text" placeholder="显示名称" autocomplete="name">
-                            <input id="registerHandle" class="text_pole" type="text" placeholder="账号，只能使用小写字母、数字和-" autocomplete="username" pattern="[a-z0-9-]+">
-                            <input id="registerPassword" class="text_pole" type="password" placeholder="密码" autocomplete="new-password">
-                            <input id="registerConfirmPassword" class="text_pole" type="password" placeholder="确认密码" autocomplete="new-password">
-                            <div id="registrationAnnouncement" class="login-announcement registration-announcement">
-                                <div class="login-announcement__icon">
-                                    <i class="fa-fw fa-solid fa-bullhorn"></i>
-                                </div>
-                                <div class="login-announcement__content">
-                                    <div class="login-announcement__eyebrow">公告</div>
-                                    <div class="login-announcement__title">API购买地址</div>
-                                    <a href="https://wang.aihaochi.com" target="_blank" rel="noopener noreferrer">https://wang.aihaochi.com</a>
+                                <div class="login-proof-item">
+                                    <p class="login-proof-label">老友回座</p>
+                                    <p class="login-proof-value">上次没聊完的话题，今晚接着说</p>
                                 </div>
                             </div>
-                            <div class="registration-actions">
-                                <div id="registerButton" class="menu_button">注册</div>
-                                <div id="cancelRegisterButton" class="menu_button">返回登录</div>
+
+                            <p class="login-security-note">
+                                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <path d="M12 3.5 19 6v5.6c0 4.2-2.82 7.95-7 9.05-4.18-1.1-7-4.85-7-9.05V6l7-2.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                                    <path d="m8.9 12.2 2.1 2.1 4.4-4.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                账号只用来保存你的座位和偏好，登录后继续上次的夜聊。
+                            </p>
+                        </section>
+
+                        <section class="login-signin-panel" aria-labelledby="normalLoginPrompt">
+                            <div class="login-signin-inner">
+                                <p class="login-panel-eyebrow">欢迎回来</p>
+                                <h2 id="normalLoginPrompt" class="login-panel-title">
+                                    登录爱玩酒馆
+                                </h2>
+                                <h2 id="discreetLoginPrompt" class="login-panel-title" style="display:none;">
+                                    请输入登录信息
+                                </h2>
+                                <h2 id="registerPrompt" class="login-panel-title" style="display:none;">
+                                    注册账号
+                                </h2>
+                                <p class="login-panel-copy">请输入账号与密码，回到你的专属座位。</p>
+
+                                <div id="userListBlock" class="wide100p login-credential-form">
+                                    <div id="userList" class="flex-container justifySpaceEvenly"></div>
+                                    <div id="handleEntryBlock" class="login-field">
+                                        <label for="userHandle">账号</label>
+                                        <input id="userHandle" class="text_pole" type="text" placeholder="请输入账号" autocomplete="username">
+                                    </div>
+                                    <div id="passwordEntryBlock" class="login-field">
+                                        <label for="userPassword">密码</label>
+                                        <input id="userPassword" class="text_pole" type="password" placeholder="请输入密码" autocomplete="current-password">
+                                        <div class="login-actions">
+                                            <button id="loginButton" class="primary-button menu_button">进入酒馆</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="registrationEntryBlock" class="register-row">
+                                    <span>还没有账号？</span>
+                                    <button id="showRegisterButton" class="register-link menu_button menu_button_icon" type="button">
+                                        注册账号
+                                    </button>
+                                </div>
+
+                                <div id="registrationBlock" style="display:none;" class="login-registration-form">
+                                    <div class="login-field">
+                                        <label for="registerName">显示名称</label>
+                                        <input id="registerName" class="text_pole" type="text" placeholder="显示名称" autocomplete="name">
+                                    </div>
+                                    <div class="login-field">
+                                        <label for="registerHandle">账号</label>
+                                        <input id="registerHandle" class="text_pole" type="text" placeholder="账号，只能使用小写字母、数字和-" autocomplete="username" pattern="[a-z0-9-]+">
+                                    </div>
+                                    <div class="login-field">
+                                        <label for="registerPassword">密码</label>
+                                        <input id="registerPassword" class="text_pole" type="password" placeholder="密码" autocomplete="new-password">
+                                    </div>
+                                    <div class="login-field">
+                                        <label for="registerConfirmPassword">确认密码</label>
+                                        <input id="registerConfirmPassword" class="text_pole" type="password" placeholder="确认密码" autocomplete="new-password">
+                                    </div>
+                                    <div class="registration-actions">
+                                        <button id="registerButton" class="primary-button menu_button" type="button">注册</button>
+                                        <button id="cancelRegisterButton" class="secondary-button menu_button" type="button">返回登录</button>
+                                    </div>
+                                </div>
+
+                                <div class="neutral_warning" id="errorMessage">
+                                </div>
+
+                                <div class="login-panel-divider"></div>
+
+                                <a id="loginApiAnnouncement" class="login-api-announcement" href="https://api.aiwanai.cc" target="_blank" rel="noopener noreferrer">
+                                    <span class="login-api-announcement__icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none">
+                                            <path d="m13 3-7 10h5l-1 8 8-11h-5l0-7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                                        </svg>
+                                    </span>
+                                    <span class="login-api-announcement__body">
+                                        <span class="login-api-announcement__title">爱玩补给站</span>
+                                        <span class="login-api-announcement__text">新朋友注册有体验礼，每日签到和邀请好友还能领取更多聊天次数。</span>
+                                        <span class="login-api-announcement__url">访问 api.aiwanai.cc</span>
+                                    </span>
+                                </a>
                             </div>
-                        </div>
-                        <div class="neutral_warning" id="errorMessage">
-                        </div>
+                        </section>
                     </div>
                 </div>
             </div>
