@@ -14,6 +14,16 @@ function getFirstLoadInitBody() {
     return mainScript.slice(start, end);
 }
 
+function getGetSettingsBody() {
+    const start = mainScript.indexOf('export async function getSettings(');
+    const end = mainScript.indexOf('//MARK: saveSettings()', start);
+
+    expect(start).toBeGreaterThanOrEqual(0);
+    expect(end).toBeGreaterThan(start);
+
+    return mainScript.slice(start, end);
+}
+
 describe('startup loader', () => {
     test('loads independent first-run resources concurrently', () => {
         const initBody = getFirstLoadInitBody();
@@ -48,5 +58,27 @@ describe('startup loader', () => {
         expect(fixViewportIndex).toBeGreaterThan(hideLoaderIndex);
         expect(initScrapersIndex).toBeGreaterThan(fixViewportIndex);
         expect(appReadyIndex).toBeGreaterThan(initScrapersIndex);
+    });
+
+    test('loads startup settings before full deferred settings', () => {
+        const settingsBody = getGetSettingsBody();
+        const startupFetchIndex = settingsBody.indexOf('fetchSettings(\'startup\')');
+        const deferredFetchIndex = settingsBody.indexOf('loadDeferredSettings(data');
+        const readyIndex = settingsBody.indexOf('settingsReady = true');
+
+        expect(startupFetchIndex).toBeGreaterThanOrEqual(0);
+        expect(deferredFetchIndex).toBeGreaterThan(startupFetchIndex);
+        expect(readyIndex).toBeGreaterThan(deferredFetchIndex);
+    });
+
+    test('keeps settings blocked when deferred settings fail', () => {
+        const settingsBody = getGetSettingsBody();
+        const failedDeferredIndex = settingsBody.indexOf('if (!deferredSettingsLoaded)');
+        const readyIndex = settingsBody.indexOf('settingsReady = true', failedDeferredIndex);
+        const failedDeferredBranch = settingsBody.slice(failedDeferredIndex, readyIndex);
+
+        expect(failedDeferredIndex).toBeGreaterThanOrEqual(0);
+        expect(readyIndex).toBeGreaterThan(failedDeferredIndex);
+        expect(failedDeferredBranch).toContain('return;');
     });
 });

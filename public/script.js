@@ -7879,11 +7879,11 @@ function reloadLoop() {
 
 //MARK: getSettings()
 ///////////////////////////////////////////
-export async function getSettings(initLoaderHandle = null) {
+async function fetchSettings(scope = 'full') {
     const response = await fetch('/api/settings/get', {
         method: 'POST',
         headers: getRequestHeaders(),
-        body: JSON.stringify({}),
+        body: JSON.stringify({ scope }),
         cache: 'no-cache',
     });
 
@@ -7893,7 +7893,47 @@ export async function getSettings(initLoaderHandle = null) {
         throw new Error('Error getting settings');
     }
 
-    const data = await response.json();
+    return response.json();
+}
+
+function hasDeferredSettings(data) {
+    return Array.isArray(data?.deferred_settings_keys) && data.deferred_settings_keys.length > 0;
+}
+
+async function loadDeferredSettings(data, enableExtensions, enableAutoUpdate) {
+    if (!hasDeferredSettings(data)) {
+        return false;
+    }
+
+    const deferredData = await fetchSettings('full');
+    if (!deferredData?.settings) {
+        return false;
+    }
+
+    const fullSettings = JSON.parse(deferredData.settings);
+    await eventSource.emit(event_types.SETTINGS_LOADED_BEFORE, fullSettings);
+    settings = fullSettings;
+
+    loadOpenAISettings(deferredData, settings.oai_settings ?? settings);
+    setupChatCompletionPromptManager(oai_settings);
+
+    if (enableExtensions) {
+        const isVersionChanged = settings.currentVersion !== currentVersion;
+        await loadExtensionSettings(settings, isVersionChanged, enableAutoUpdate);
+        await eventSource.emit(event_types.EXTENSION_SETTINGS_LOADED);
+    } else {
+        Object.assign(extension_settings, (settings.extension_settings ?? {}));
+    }
+
+    await eventSource.emit(event_types.SETTINGS_LOADED_AFTER, settings);
+    return true;
+}
+
+export async function getSettings(initLoaderHandle = null) {
+    const data = await fetchSettings('startup');
+    const enableExtensions = Boolean(data.enable_extensions);
+    const enableAutoUpdate = Boolean(data.enable_extensions_auto_update);
+
     if (data.result != 'file not find' && data.settings) {
         settings = JSON.parse(data.settings);
         if (settings.username !== undefined && settings.username !== '') {
@@ -7987,12 +8027,11 @@ export async function getSettings(initLoaderHandle = null) {
         // power_user.experimental_macro_engine
         initMacros();
 
-        if (data.enable_extensions) {
-            const enableAutoUpdate = Boolean(data.enable_extensions_auto_update);
+        if (data.enable_extensions && !hasDeferredSettings(data)) {
             const isVersionChanged = settings.currentVersion !== currentVersion;
             await loadExtensionSettings(settings, isVersionChanged, enableAutoUpdate);
             await eventSource.emit(event_types.EXTENSION_SETTINGS_LOADED);
-        } else {
+        } else if (!data.enable_extensions) {
             Object.assign(extension_settings, (settings.extension_settings ?? {}));
             $('#third_party_extension_button').addClass('disabled');
             $('#extensions_details').addClass('disabled');
@@ -8012,6 +8051,27 @@ export async function getSettings(initLoaderHandle = null) {
         }
     }
     await validateDisabledSamplers();
+
+    if (hasDeferredSettings(data)) {
+        const deferredSettingsPromise = loadDeferredSettings(data, enableExtensions, enableAutoUpdate)
+            .catch(error => {
+                console.error('Deferred settings could not be loaded', error);
+                toastr.error(t`Some settings could not be loaded. Please refresh the page before making changes.`);
+                return false;
+            });
+
+        deferredSettingsPromise.then(async deferredSettingsLoaded => {
+            if (!deferredSettingsLoaded) {
+                await eventSource.emit(event_types.SETTINGS_LOADED_AFTER, settings);
+                return;
+            }
+
+            settingsReady = true;
+            await eventSource.emit(event_types.SETTINGS_LOADED);
+        });
+        return;
+    }
+
     settingsReady = true;
     await eventSource.emit(event_types.SETTINGS_LOADED);
 }

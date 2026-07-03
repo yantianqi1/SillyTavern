@@ -11,6 +11,7 @@ import { getConfigValue, generateTimestamp, removeOldBackups } from '../util.js'
 import { getAllUserHandles, getUserDirectories } from '../users.js';
 import { getFileNameValidationFunction } from '../middleware/validateFileName.js';
 import { getChatCompletionSourcePolicy } from '../chat-completion-source-policy.js';
+import { buildSettingsTextForScope, getSettingsScope } from '../settings-scope.js';
 
 const ENABLE_EXTENSIONS = !!getConfigValue('extensions.enabled', true, 'boolean');
 const ENABLE_EXTENSIONS_AUTO_UPDATE = !!getConfigValue('extensions.autoUpdate', true, 'boolean');
@@ -218,13 +219,15 @@ router.post('/save', function (request, response) {
 
 // Wintermute's code
 router.post('/get', (request, response) => {
-    let settings;
+    let settingsText;
     try {
         const pathToSettings = path.join(request.user.directories.root, SETTINGS_FILE);
-        settings = fs.readFileSync(pathToSettings, 'utf8');
+        settingsText = fs.readFileSync(pathToSettings, 'utf8');
     } catch (e) {
         return response.sendStatus(500);
     }
+
+    const { settings, deferred_settings_keys } = buildSettingsTextForScope(settingsText, getSettingsScope(request));
 
     // NovelAI Settings
     const { fileContents: novelai_settings, fileNames: novelai_setting_names }
@@ -284,6 +287,7 @@ router.post('/get', (request, response) => {
         context,
         sysprompt,
         reasoning,
+        deferred_settings_keys,
         enable_extensions: ENABLE_EXTENSIONS,
         enable_extensions_auto_update: ENABLE_EXTENSIONS_AUTO_UPDATE,
         enable_accounts: ENABLE_ACCOUNTS,
