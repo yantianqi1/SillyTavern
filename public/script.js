@@ -760,10 +760,12 @@ async function firstLoadInit() {
     initDynamicStyles();
     initTags();
     initBookmarks();
-    await getUserAvatars(true, user_avatar);
-    await getCharacters();
-    await getBackgrounds();
-    await initTokenizers();
+    await Promise.all([
+        getUserAvatars(true, user_avatar),
+        getCharacters(),
+        getBackgrounds(),
+        initTokenizers(),
+    ]);
     initBackgrounds();
     initAuthorsNote();
     await initPersonas();
@@ -781,7 +783,6 @@ async function firstLoadInit() {
     initBulkEdit();
     initReasoning();
     initWelcomeScreen();
-    await initScrapers();
     initCustomSelectedSamplers();
     initDataMaid();
     initCharacterStore({
@@ -797,6 +798,7 @@ async function firstLoadInit() {
     await eventSource.emit(event_types.APP_INITIALIZED);
     await initLoaderHandle.hide();
     await fixViewport();
+    await initScrapers();
     await eventSource.emit(event_types.APP_READY);
 }
 

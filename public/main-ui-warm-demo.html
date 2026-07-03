@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, viewport-fit=cover, initial-scale=1">
+    <title>爱玩酒馆 - 原结构暖光换肤稿</title>
+    <link href="css/fontawesome.min.css" rel="stylesheet">
+    <link href="css/solid.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --sheldWidth: 50vw;
+            --topBarBlockSize: 35px;
+            --bottomFormBlockSize: 42px;
+            --mainFontSize: 15px;
+            --mainFontFamily: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+            --SmartThemeBodyColor: #342b25;
+            --SmartThemeEmColor: #76675c;
+            --SmartThemeUnderlineColor: #547761;
+            --SmartThemeQuoteColor: #9b5a47;
+            --SmartThemeBlurTintColor: rgba(255, 248, 236, 0.88);
+            --SmartThemeChatTintColor: rgba(255, 243, 224, 0.78);
+            --SmartThemeUserMesBlurTintColor: rgba(231, 244, 235, 0.82);
+            --SmartThemeBotMesBlurTintColor: rgba(255, 252, 246, 0.88);
+            --SmartThemeBorderColor: rgba(100, 67, 42, 0.24);
+            --SmartThemeShadowColor: rgba(55, 34, 20, 0.18);
+            --SmartThemeBlurStrength: 18px;
+            --surface-strong: rgba(255, 252, 246, 0.94);
+            --surface-soft: rgba(255, 244, 226, 0.7);
+            --accent-green: #466a55;
+            --accent-berry: #8e4b62;
+            --accent-gold: #bd7b3d;
+            --muted-line: rgba(100, 67, 42, 0.14);
+        }
+
+        * {
+            box-sizing: border-box;
+            text-shadow: none;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            position: relative;
+            min-height: 100dvh;
+            overflow: hidden;
+            color: var(--SmartThemeBodyColor);
+            font-family: var(--mainFontFamily);
+            font-size: var(--mainFontSize);
+            background: #2f241f;
+        }
+
+        button,
+        textarea,
+        input,
+        select {
+            font: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        #bg1 {
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(90deg, rgba(49, 34, 27, 0.48), rgba(255, 239, 214, 0.04) 32%, rgba(49, 34, 27, 0.5)),
+                linear-gradient(180deg, rgba(255, 230, 188, 0.22), rgba(42, 28, 23, 0.56)),
+                url("img/login-background.jpg") center / cover no-repeat;
+        }
+
+        #top-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 3005;
+            width: var(--sheldWidth);
+            height: var(--topBarBlockSize);
+            margin: 0 auto;
+            border-bottom: 1px solid var(--SmartThemeBorderColor);
+            background: var(--SmartThemeBlurTintColor);
+            box-shadow: 0 8px 24px var(--SmartThemeShadowColor);
+            backdrop-filter: blur(var(--SmartThemeBlurStrength));
+            -webkit-backdrop-filter: blur(var(--SmartThemeBlurStrength));
+        }
+
+        #top-settings-holder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 4010;
+            width: 100%;
+            height: var(--topBarBlockSize);
+            pointer-events: none;
+        }
+
+        .top-icons {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: var(--sheldWidth);
+            height: var(--topBarBlockSize);
+            margin: 0 auto;
+            pointer-events: auto;
+        }
+
+        .top-icon {
+            display: grid;
+            place-items: center;
+            width: 35px;
+            height: 35px;
+            border: 0;
+            color: rgba(52, 43, 37, 0.62);
+            background: transparent;
+            font-size: 20px;
+            transition: color 160ms ease, background 160ms ease;
+        }
+
+        .top-icon:hover,
+        .top-icon.active {
+            color: var(--accent-green);
+            background: rgba(255, 255, 255, 0.38);
+        }
+
+        #ai-config-button,
+        #rightNavHolder {
+            position: absolute;
+            top: 0;
+            width: 35px;
+            height: 35px;
+            pointer-events: auto;
+        }
+
+        #ai-config-button {
+            left: calc((100dvw - var(--sheldWidth)) / 2);
+        }
+
+        #rightNavHolder {
+            right: calc((100dvw - var(--sheldWidth)) / 2);
+        }
+
+        .drawer-toggle {
+            display: grid;
+            place-items: center;
+            width: 35px;
+            height: 35px;
+        }
+
+        .drawer-icon {
+            display: grid;
+            place-items: center;
+            width: 35px;
+            height: 35px;
+            border: 0;
+            color: rgba(52, 43, 37, 0.68);
+            background: transparent;
+            font-size: 20px;
+        }
+
+        .drawer-icon:hover,
+        .drawer-icon.active {
+            color: var(--accent-berry);
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        #sheld {
+            position: absolute;
+            top: var(--topBarBlockSize);
+            left: 0;
+            right: 0;
+            z-index: 30;
+            display: flex;
+            flex-direction: column;
+            width: var(--sheldWidth);
+            min-width: 100px;
+            height: calc(100dvh - var(--topBarBlockSize) - 1px);
+            max-height: calc(100dvh - var(--topBarBlockSize) - 1px);
+            margin: 0 auto;
+            overflow-x: hidden;
+        }
+
+        #chat {
+            z-index: 30;
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+            max-height: calc(100dvh - var(--topBarBlockSize) - var(--bottomFormBlockSize));
+            overflow-x: hidden;
+            overflow-y: auto;
+            background: var(--SmartThemeChatTintColor);
+            backdrop-filter: blur(var(--SmartThemeBlurStrength));
+            -webkit-backdrop-filter: blur(var(--SmartThemeBlurStrength));
+        }
+
+        #chat::-webkit-scrollbar,
+        .scrollableInner::-webkit-scrollbar {
+            width: 9px;
+        }
+
+        #chat::-webkit-scrollbar-thumb,
+        .scrollableInner::-webkit-scrollbar-thumb {
+            border: 2px solid rgba(255, 248, 236, 0.64);
+            border-radius: 999px;
+            background: rgba(95, 73, 58, 0.36);
+        }
+
+        #form_sheld {
+            z-index: 30;
+            width: 100%;
+            margin: 1px auto 0;
+            white-space: nowrap;
+        }
+
+        #send_form {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            min-height: var(--bottomFormBlockSize);
+            margin: 0 auto;
+            border: 1px solid var(--SmartThemeBorderColor);
+            border-radius: 0 0 10px 10px;
+            background: var(--SmartThemeBlurTintColor);
+            box-shadow: 0 -6px 20px rgba(55, 34, 20, 0.08);
+            backdrop-filter: blur(var(--SmartThemeBlurStrength));
+            -webkit-backdrop-filter: blur(var(--SmartThemeBlurStrength));
+        }
+
+        #leftSendForm,
+        #rightSendForm {
+            display: flex;
+            align-items: center;
+            min-height: var(--bottomFormBlockSize);
+            padding: 0 5px;
+            gap: 4px;
+        }
+
+        #send_textarea {
+            flex: 1 1 auto;
+            min-width: 0;
+            min-height: 32px;
+            max-height: 80px;
+            margin: 4px 0;
+            padding: 7px 9px;
+            resize: none;
+            border: 1px solid rgba(100, 67, 42, 0.18);
+            border-radius: 5px;
+            outline: 0;
+            color: var(--SmartThemeBodyColor);
+            background: rgba(255, 252, 246, 0.74);
+        }
+
+        #send_textarea::placeholder {
+            color: rgba(74, 62, 52, 0.58);
+        }
+
+        .send-button,
+        .menu_button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            min-height: 28px;
+            padding: 3px 7px;
+            border: 1px solid var(--SmartThemeBorderColor);
+            border-radius: 5px;
+            color: var(--SmartThemeBodyColor);
+            background: rgba(255, 252, 246, 0.72);
+            transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+        }
+
+        .send-button:hover,
+        .menu_button:hover {
+            border-color: rgba(70, 106, 85, 0.34);
+            color: var(--accent-green);
+            background: rgba(233, 245, 234, 0.86);
+        }
+
+        .send-button.primary {
+            color: #fff;
+            background: var(--accent-berry);
+            border-color: rgba(142, 75, 98, 0.34);
+        }
+
+        .send-button.primary:hover {
+            color: #fff;
+            background: #7d4055;
+        }
+
+        .welcome {
+            padding: 14px 12px 10px;
+        }
+
+        .welcome-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 8px;
+            font-size: 20px;
+            line-height: 1.2;
+        }
+
+        .st-badge {
+            display: grid;
+            place-items: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 5px;
+            color: #fff;
+            background: linear-gradient(135deg, var(--accent-berry), var(--accent-gold));
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .quick-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin: 8px 0 10px;
+        }
+
+        .small-center {
+            margin: 8px 0;
+            text-align: center;
+            color: var(--SmartThemeEmColor);
+        }
+
+        .mes {
+            display: flex;
+            align-items: flex-start;
+            width: 100%;
+            padding: 10px 10px 0;
+            color: var(--SmartThemeBodyColor);
+        }
+
+        .mes.user {
+            background: linear-gradient(90deg, rgba(231, 244, 235, 0.42), rgba(231, 244, 235, 0.1));
+        }
+
+        .mes.bot {
+            background: linear-gradient(90deg, rgba(255, 252, 246, 0.5), rgba(255, 252, 246, 0.1));
+        }
+
+        .mesAvatarWrapper {
+            width: 54px;
+            flex: 0 0 54px;
+        }
+
+        .avatar {
+            display: grid;
+            place-items: center;
+            width: 44px;
+            height: 44px;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            color: #fff;
+            background: linear-gradient(135deg, var(--accent-berry), #ba7565);
+            box-shadow: 0 8px 20px rgba(55, 34, 20, 0.14);
+            font-weight: 800;
+        }
+
+        .mes.user .avatar {
+            background: linear-gradient(135deg, var(--accent-green), #7e9362);
+        }
+
+        .mes_block {
+            min-width: 0;
+            flex: 1 1 auto;
+            padding: 1px 0 11px;
+            border-bottom: 1px solid var(--muted-line);
+        }
+
+        .ch_name {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 7px;
+            margin-bottom: 6px;
+            font-weight: 800;
+        }
+
+        .timestamp {
+            color: var(--SmartThemeEmColor);
+            font-size: 12px;
+            font-weight: 400;
+        }
+
+        .mes_text {
+            max-width: 68ch;
+            line-height: 1.65;
+        }
+
+        .mes_text p {
+            margin: 0 0 8px;
+        }
+
+        .mes_text q {
+            color: var(--SmartThemeQuoteColor);
+        }
+
+        .mes_buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+            color: var(--SmartThemeEmColor);
+        }
+
+        .drawer-content {
+            position: absolute;
+            top: 0;
+            z-index: 3000;
+            display: none;
+            width: calc(((100dvw - var(--sheldWidth)) / 2) - 1px);
+            min-width: 260px;
+            height: calc(100dvh - var(--topBarBlockSize));
+            padding: 5px;
+            overflow-y: auto;
+            border: 1px solid var(--SmartThemeBorderColor);
+            border-radius: 10px;
+            color: var(--SmartThemeBodyColor);
+            background: var(--SmartThemeBlurTintColor);
+            box-shadow: 0 18px 48px var(--SmartThemeShadowColor);
+            backdrop-filter: blur(var(--SmartThemeBlurStrength));
+            -webkit-backdrop-filter: blur(var(--SmartThemeBlurStrength));
+        }
+
+        .drawer-content.openDrawer {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .fillLeft {
+            left: 0;
+        }
+
+        .fillRight {
+            right: 0;
+        }
+
+        .drag-grabber {
+            align-self: flex-end;
+            height: 20px;
+            padding: 2px 6px;
+            color: rgba(52, 43, 37, 0.45);
+        }
+
+        .scrollableInner {
+            min-height: 0;
+            overflow-y: auto;
+            padding: 5px 8px 12px;
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin: 0 0 8px;
+            padding: 8px;
+            border: 1px solid rgba(100, 67, 42, 0.14);
+            border-radius: 5px;
+            background: rgba(255, 252, 246, 0.62);
+            font-weight: 800;
+        }
+
+        .inline-drawer {
+            margin: 8px 0;
+            border: 1px solid rgba(100, 67, 42, 0.16);
+            border-radius: 5px;
+            background: rgba(255, 252, 246, 0.58);
+        }
+
+        .inline-drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            color: var(--SmartThemeBodyColor);
+            font-weight: 800;
+        }
+
+        .inline-drawer-content {
+            padding: 0 8px 8px;
+        }
+
+        .text_pole {
+            width: 100%;
+            min-height: 30px;
+            margin: 5px 0;
+            padding: 5px 7px;
+            border: 1px solid rgba(100, 67, 42, 0.2);
+            border-radius: 5px;
+            color: var(--SmartThemeBodyColor);
+            background: rgba(255, 252, 246, 0.74);
+        }
+
+        .text_pole::placeholder {
+            color: rgba(74, 62, 52, 0.52);
+        }
+
+        .slider-row {
+            display: grid;
+            grid-template-columns: 1fr 42px;
+            gap: 6px;
+            align-items: center;
+            margin: 7px 0;
+            color: var(--SmartThemeEmColor);
+            font-size: 13px;
+        }
+
+        .slider-track {
+            height: 6px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--accent-green) 0 62%, rgba(100, 67, 42, 0.18) 62%);
+        }
+
+        #rm_button_bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 8px 0;
+        }
+
+        .character-card {
+            display: grid;
+            grid-template-columns: 45px minmax(0, 1fr);
+            gap: 8px;
+            align-items: center;
+            margin: 8px 0;
+            padding: 8px;
+            border: 1px solid rgba(100, 67, 42, 0.16);
+            border-radius: 5px;
+            background: rgba(255, 252, 246, 0.58);
+        }
+
+        .character-card.active {
+            border-color: rgba(70, 106, 85, 0.28);
+            background: rgba(231, 244, 235, 0.62);
+        }
+
+        .character-card .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+        }
+
+        .character-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 800;
+        }
+
+        .character-note {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--SmartThemeEmColor);
+            font-size: 12px;
+        }
+
+        .tag {
+            display: inline-flex;
+            min-height: 20px;
+            align-items: center;
+            margin-top: 4px;
+            padding: 0 6px;
+            border: 1px solid rgba(142, 75, 98, 0.22);
+            border-radius: 5px;
+            color: var(--accent-berry);
+            background: rgba(255, 238, 232, 0.68);
+            font-size: 12px;
+        }
+
+        @media (max-width: 900px) {
+            :root {
+                --sheldWidth: 100dvw;
+            }
+
+            #top-bar,
+            .top-icons,
+            #sheld {
+                width: 100dvw;
+            }
+
+            #ai-config-button {
+                left: 0;
+            }
+
+            #rightNavHolder {
+                right: 0;
+            }
+
+            .drawer-content {
+                width: 100dvw;
+                min-width: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="bg1"></div>
+
+    <div id="top-bar"></div>
+    <div id="top-settings-holder">
+        <div class="top-icons" aria-label="顶部工具">
+            <button class="top-icon active fa-solid fa-sliders" type="button" aria-label="参数"></button>
+            <button class="top-icon fa-solid fa-wand-magic-sparkles" type="button" aria-label="快捷操作"></button>
+            <button class="top-icon fa-solid fa-font" type="button" aria-label="文本"></button>
+            <button class="top-icon fa-solid fa-globe" type="button" aria-label="世界"></button>
+            <button class="top-icon fa-solid fa-user-gear" type="button" aria-label="用户"></button>
+            <button class="top-icon fa-solid fa-image" type="button" aria-label="背景"></button>
+            <button class="top-icon fa-solid fa-cubes" type="button" aria-label="扩展"></button>
+            <button class="top-icon fa-solid fa-face-smile" type="button" aria-label="表情"></button>
+            <button class="top-icon fa-solid fa-address-card" type="button" aria-label="角色"></button>
+        </div>
+
+        <div id="ai-config-button" class="drawer">
+            <div class="drawer-toggle">
+                <button id="leftNavDrawerIcon" class="drawer-icon fa-solid fa-sliders" type="button" title="AI Response Configuration" aria-label="打开左侧设置"></button>
+            </div>
+        </div>
+
+        <div id="rightNavHolder" class="drawer">
+            <div class="drawer-toggle">
+                <button id="rightNavDrawerIcon" class="drawer-icon active fa-solid fa-address-card" type="button" title="Character Management" aria-label="打开右侧角色管理"></button>
+            </div>
+        </div>
+    </div>
+
+    <section id="sheld" aria-label="主聊天区">
+        <section id="chat">
+            <div class="welcome">
+                <h1 class="welcome-title"><span class="st-badge">ST</span><span>SillyTavern 1.16.0 · 爱玩酒馆</span></h1>
+                <div class="quick-links">
+                    <button class="menu_button" type="button"><i class="fa-solid fa-circle-question"></i>&nbsp;文档</button>
+                    <button class="menu_button" type="button"><i class="fa-brands fa-github"></i>&nbsp;GitHub</button>
+                    <button class="menu_button" type="button"><i class="fa-brands fa-discord"></i>&nbsp;Discord</button>
+                    <button class="menu_button" type="button"><i class="fa-solid fa-comment-dots"></i>&nbsp;临时聊天</button>
+                </div>
+                <div class="small-center"><i class="fa-solid fa-comments"></i> 无最近聊天</div>
+            </div>
+
+            <article class="mes bot">
+                <div class="mesAvatarWrapper">
+                    <div class="avatar">ST</div>
+                </div>
+                <div class="mes_block">
+                    <div class="ch_name">
+                        <span>Assistant</span>
+                        <span class="timestamp">2026年6月28日 22:32</span>
+                    </div>
+                    <div class="mes_text">
+                        <p>If you're connected to an API, try asking me something!</p>
+                        <p><strong>Hint:</strong> Set any character as your welcome page assistant from their <q>More...</q> menu.</p>
+                    </div>
+                    <div class="mes_buttons">
+                        <button class="menu_button" type="button"><i class="fa-solid fa-plug"></i>&nbsp;API连接</button>
+                        <button class="menu_button" type="button"><i class="fa-solid fa-address-card"></i>&nbsp;角色管理</button>
+                        <button class="menu_button" type="button"><i class="fa-solid fa-cubes"></i>&nbsp;扩展</button>
+                    </div>
+                </div>
+            </article>
+
+            <article class="mes user">
+                <div class="mesAvatarWrapper">
+                    <div class="avatar">你</div>
+                </div>
+                <div class="mes_block">
+                    <div class="ch_name">
+                        <span>你</span>
+                        <span class="timestamp">22:35</span>
+                    </div>
+                    <div class="mes_text">
+                        <p>只是把这套界面换成暖光、成熟一点，不改变原来的位置和操作习惯。</p>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <footer id="form_sheld">
+            <div id="send_form">
+                <div id="leftSendForm">
+                    <button class="send-button fa-solid fa-bars" type="button" aria-label="菜单"></button>
+                    <button class="send-button fa-solid fa-wand-magic-sparkles" type="button" aria-label="快捷"></button>
+                    <button class="send-button fa-solid fa-paperclip" type="button" aria-label="附件"></button>
+                </div>
+                <textarea id="send_textarea" rows="1" placeholder="写点什么，今晚从这里开始..."></textarea>
+                <div id="rightSendForm">
+                    <button class="send-button fa-solid fa-square-poll-horizontal" type="button" aria-label="状态"></button>
+                    <button class="send-button primary fa-solid fa-paper-plane" type="button" aria-label="发送"></button>
+                </div>
+            </div>
+        </footer>
+    </section>
+
+    <aside id="left-nav-panel" class="drawer-content fillLeft" aria-label="左侧配置面板">
+        <div id="left-nav-panelheader" class="fa-solid fa-grip drag-grabber"></div>
+        <div class="scrollableInner">
+            <div class="panel-title">
+                <span>AI Response Configuration</span>
+                <span class="fa-solid fa-lock"></span>
+            </div>
+            <div class="inline-drawer">
+                <div class="inline-drawer-header">
+                    <span>Preset</span>
+                    <span class="fa-solid fa-chevron-down"></span>
+                </div>
+                <div class="inline-drawer-content">
+                    <select class="text_pole">
+                        <option>GUI KoboldAI Settings</option>
+                    </select>
+                    <div class="slider-row"><span>Temperature</span><span>0.80</span><div class="slider-track"></div><span></span></div>
+                    <div class="slider-row"><span>Top P</span><span>0.92</span><div class="slider-track"></div><span></span></div>
+                    <div class="slider-row"><span>Min P</span><span>0.05</span><div class="slider-track"></div><span></span></div>
+                </div>
+            </div>
+            <div class="inline-drawer">
+                <div class="inline-drawer-header">
+                    <span>Prompt Formatting</span>
+                    <span class="fa-solid fa-chevron-right"></span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <nav id="right-nav-panel" class="drawer-content fillRight openDrawer" aria-label="右侧角色管理">
+        <div id="right-nav-panelheader" class="fa-solid fa-grip drag-grabber"></div>
+        <div class="scrollableInner">
+            <div class="panel-title">
+                <span>角色管理</span>
+                <span class="fa-solid fa-star"></span>
+            </div>
+            <input class="text_pole" type="search" placeholder="搜索角色">
+            <div id="rm_button_bar">
+                <button class="menu_button fa-solid fa-user-plus" type="button" title="Create New Character"></button>
+                <button class="menu_button fa-solid fa-file-import" type="button" title="Import"></button>
+                <button class="menu_button fa-solid fa-store" type="button" title="Store"></button>
+                <button class="menu_button fa-solid fa-users-gear" type="button" title="Group"></button>
+                <button class="menu_button fa-solid fa-filter" type="button" title="Filter"></button>
+            </div>
+            <div class="quick-links">
+                <button class="menu_button fa-solid fa-chevron-left" type="button" aria-label="上一页"></button>
+                <button class="menu_button fa-solid fa-chevron-right" type="button" aria-label="下一页"></button>
+                <select class="text_pole" style="width: 92px;">
+                    <option>50 / page</option>
+                </select>
+            </div>
+            <div class="character-card active">
+                <div class="avatar">瑟</div>
+                <div>
+                    <div class="character-name">Seraphina</div>
+                    <div class="character-note">ST Default Bot contest winner: ...</div>
+                    <span class="tag">ST Default</span>
+                </div>
+            </div>
+            <div class="character-card">
+                <div class="avatar">鹿</div>
+                <div>
+                    <div class="character-name">鹿野</div>
+                    <div class="character-note">壁炉旁 · 闲谈适合</div>
+                    <span class="tag">最近</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <script>
+        const leftIcon = document.getElementById("leftNavDrawerIcon");
+        const rightIcon = document.getElementById("rightNavDrawerIcon");
+        const leftPanel = document.getElementById("left-nav-panel");
+        const rightPanel = document.getElementById("right-nav-panel");
+
+        leftIcon.addEventListener("click", () => {
+            leftPanel.classList.toggle("openDrawer");
+            leftIcon.classList.toggle("active", leftPanel.classList.contains("openDrawer"));
+        });
+
+        rightIcon.addEventListener("click", () => {
+            rightPanel.classList.toggle("openDrawer");
+            rightIcon.classList.toggle("active", rightPanel.classList.contains("openDrawer"));
+        });
+    </script>
+</body>
+
+</html>

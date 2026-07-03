@@ -1,6 +1,5 @@
 import {
     getStoreCardSummaryDisplay,
-    getStoreCardTagsDisplay,
 } from './character-store-data.js';
 
 export function renderStoreCard(card, previewEndpoint) {
@@ -33,16 +32,8 @@ function renderCardMeta(card) {
     if (card.category) {
         meta.append($('<span></span>').addClass('character_store_card_category').text(card.category));
     }
-    appendCardTags(meta, card);
     appendCardSummary(meta, card);
     return meta;
-}
-
-function appendCardTags(meta, card) {
-    const tags = getStoreCardTagsDisplay(card);
-    if (tags.length) {
-        meta.append(renderCardTags(tags));
-    }
 }
 
 function appendCardSummary(meta, card) {
@@ -50,14 +41,6 @@ function appendCardSummary(meta, card) {
     if (summary) {
         meta.append($('<p></p>').text(summary));
     }
-}
-
-function renderCardTags(tags) {
-    const container = $('<div></div>').addClass('character_store_card_tags');
-    for (const tag of tags) {
-        container.append($('<span></span>').addClass('character_store_card_tag').text(tag));
-    }
-    return container;
 }
 
 function getPreviewUrl(card, previewEndpoint) {

@@ -32,6 +32,7 @@ import {
     getUserDirectoriesList,
     migrateSystemPrompts,
     migrateUserData,
+    requireAdminMiddleware,
     requireLoginMiddleware,
     setUserDataMiddleware,
     shouldRedirectToLogin,
@@ -75,6 +76,8 @@ import { redirectDeprecatedEndpoints, ServerStartup, setupPrivateEndpoints } fro
 import { diskCache } from './endpoints/characters.js';
 import { migrateFlatSecrets } from './endpoints/secrets.js';
 import { migrateGroupChatsMetadataFormat } from './endpoints/groups.js';
+import { initializeAllUserMetadata } from './endpoints/image-metadata.js';
+import { restoreFromCloudBackupIfEnabled, startCloudBackupScheduler } from './cloud-backup.js';
 
 // Work around a node v20.0.0, v20.1.0, and v20.2.0 bug. The issue was fixed in v20.3.0.
 // https://github.com/nodejs/node/issues/47822#issuecomment-1564708870
@@ -236,7 +239,7 @@ app.get('/callback/:source?', (request, response) => {
 });
 
 // Host login page
-app.get('/login', loginPageMiddleware);
+app.get('/login', cacheBuster.middleware, loginPageMiddleware);
 
 // Host frontend assets
 const webpackMiddleware = getWebpackServeMiddleware();
@@ -256,6 +259,10 @@ app.post('/api/ping', (request, response) => {
     }
 
     response.sendStatus(204);
+});
+
+app.get('/character-store-admin', requireAdminMiddleware, cacheBuster.middleware, (_request, response) => {
+    return response.sendFile('character-store-admin.html', { root: path.join(serverDirectory, 'public') });
 });
 
 if (cliArgs.enableCorsProxy) {
@@ -449,6 +456,7 @@ async function postSetupTasks(result) {
     console.log('\n' + getSeparator(plainGoToLog.length) + '\n');
 
     setupLogLevel();
+    startCloudBackupScheduler(globalThis.DATA_ROOT);
     serverEvents.emit(EVENT_NAMES.SERVER_STARTED, { url: browserLaunchUrl });
 }
 
@@ -480,7 +488,8 @@ function setDnsResolutionOrder() {
 }
 
 // User storage module needs to be initialized before starting the server
-initUserStorage(globalThis.DATA_ROOT)
+restoreFromCloudBackupIfEnabled(globalThis.DATA_ROOT)
+    .then(() => initUserStorage(globalThis.DATA_ROOT))
     .then(setDnsResolutionOrder)
     .then(ensurePublicDirectoriesExist)
     .then(migrateUserData)

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>爱玩酒馆 - 登录示范</title>
+    <style>
+        :root {
+            --page-bg: #08110f;
+            --surface: #fbfbf7;
+            --surface-soft: #eef6f1;
+            --text: #142320;
+            --muted: #61716c;
+            --primary: #0f766e;
+            --primary-dark: #0b5f59;
+            --accent: #a66f2a;
+            --line: rgba(20, 35, 32, 0.12);
+            --shadow: 0 28px 80px rgba(0, 0, 0, 0.32);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            min-height: 100%;
+        }
+
+        body {
+            margin: 0;
+            background:
+                linear-gradient(90deg, rgba(4, 12, 11, 0.78), rgba(4, 12, 11, 0.52) 48%, rgba(4, 12, 11, 0.82)),
+                url("img/login-background.jpg");
+            background-color: var(--page-bg);
+            background-position: center;
+            background-size: cover;
+            color: var(--surface);
+            font-family: "Noto Sans", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+        }
+
+        a {
+            color: inherit;
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        .login-page {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(380px, 460px);
+            gap: clamp(32px, 6vw, 88px);
+            align-items: center;
+            width: min(1180px, calc(100vw - 48px));
+            min-height: 100dvh;
+            margin: 0 auto;
+            padding: clamp(10px, 2vh, 24px) 0;
+        }
+
+        .brand-area {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 0;
+        }
+
+        .brand-lockup {
+            display: inline-flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: clamp(34px, 7vh, 64px);
+        }
+
+        .brand-mark {
+            display: grid;
+            place-items: center;
+            width: 48px;
+            height: 48px;
+            border: 1px solid rgba(255, 255, 255, 0.24);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.26);
+        }
+
+        .brand-mark svg {
+            width: 25px;
+            height: 25px;
+            color: #f8dca8;
+        }
+
+        .brand-name {
+            margin: 0;
+            font-size: 1.18rem;
+            font-weight: 800;
+        }
+
+        .brand-subtitle {
+            margin: 3px 0 0;
+            color: rgba(255, 255, 255, 0.68);
+            font-size: 0.92rem;
+        }
+
+        .hero-kicker {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            margin: 0 0 18px;
+            padding: 7px 12px;
+            border: 1px solid rgba(248, 220, 168, 0.42);
+            border-radius: 999px;
+            background: rgba(166, 111, 42, 0.14);
+            color: #f8dca8;
+            font-size: 0.86rem;
+            font-weight: 700;
+        }
+
+        .hero-title {
+            max-width: 680px;
+            margin: 0;
+            color: #fffdf8;
+            font-size: clamp(2.6rem, 5vw, 5.4rem);
+            font-weight: 900;
+            line-height: 1.04;
+            letter-spacing: 0;
+        }
+
+        .hero-copy {
+            max-width: 620px;
+            margin: 20px 0 0;
+            color: rgba(255, 255, 255, 0.76);
+            font-size: clamp(1rem, 1.4vw, 1.14rem);
+            line-height: 1.75;
+        }
+
+        .proof-list {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            max-width: 690px;
+            margin: 34px 0 0;
+        }
+
+        .proof-item {
+            min-height: 104px;
+            padding: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .proof-label {
+            margin: 0 0 12px;
+            color: rgba(255, 255, 255, 0.62);
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .proof-value {
+            margin: 0;
+            color: #ffffff;
+            font-size: 1.02rem;
+            font-weight: 800;
+            line-height: 1.45;
+        }
+
+        .signin-panel {
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.72);
+            border-radius: 8px;
+            background: rgba(251, 251, 247, 0.96);
+            box-shadow: var(--shadow);
+            color: var(--text);
+        }
+
+        .signin-inner {
+            padding: clamp(22px, 2.4vw, 28px);
+        }
+
+        .panel-eyebrow {
+            margin: 0 0 10px;
+            color: var(--primary);
+            font-size: 0.86rem;
+            font-weight: 900;
+        }
+
+        .panel-title {
+            margin: 0;
+            color: var(--text);
+            font-size: clamp(1.7rem, 3vw, 2.2rem);
+            font-weight: 900;
+            line-height: 1.18;
+        }
+
+        .panel-copy {
+            margin: 8px 0 18px;
+            color: var(--muted);
+            font-size: 0.96rem;
+            line-height: 1.6;
+        }
+
+        .field-group {
+            display: grid;
+            gap: 14px;
+        }
+
+        .field {
+            display: grid;
+            gap: 8px;
+        }
+
+        .field label {
+            color: #253631;
+            font-size: 0.9rem;
+            font-weight: 800;
+        }
+
+        .field input {
+            width: 100%;
+            min-height: 46px;
+            padding: 0 14px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #ffffff;
+            color: var(--text);
+            outline: none;
+            transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+        }
+
+        .field input::placeholder {
+            color: #9aa8a4;
+        }
+
+        .field input:focus {
+            border-color: rgba(15, 118, 110, 0.82);
+            box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.16);
+        }
+
+        .form-options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin: 12px 0 18px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .remember {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            min-height: 44px;
+            cursor: pointer;
+        }
+
+        .remember input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+
+        .support-link {
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            color: var(--primary-dark);
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .support-link:hover {
+            text-decoration: underline;
+        }
+
+        .primary-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 48px;
+            border: 0;
+            border-radius: 8px;
+            background: var(--primary);
+            color: #ffffff;
+            cursor: pointer;
+            font-weight: 900;
+            box-shadow: 0 16px 30px rgba(15, 118, 110, 0.26);
+            transition: background-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+        }
+
+        .primary-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 18px 34px rgba(15, 118, 110, 0.32);
+        }
+
+        .primary-button:focus-visible,
+        .support-link:focus-visible,
+        .register-link:focus-visible,
+        .api-link:focus-visible {
+            outline: 3px solid rgba(15, 118, 110, 0.32);
+            outline-offset: 3px;
+        }
+
+        .register-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 44px;
+            margin-top: 12px;
+            color: var(--muted);
+            font-size: 0.94rem;
+        }
+
+        .register-link {
+            color: var(--primary-dark);
+            font-weight: 900;
+            text-decoration: none;
+        }
+
+        .register-link:hover {
+            text-decoration: underline;
+        }
+
+        .panel-divider {
+            height: 1px;
+            margin: 16px -6px 14px;
+            background: var(--line);
+        }
+
+        .api-strip {
+            display: grid;
+            grid-template-columns: 38px minmax(0, 1fr);
+            gap: 12px;
+            align-items: start;
+        }
+
+        .api-icon {
+            display: grid;
+            place-items: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            background: #f8ead3;
+            color: var(--accent);
+        }
+
+        .api-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .api-title {
+            margin: 0 0 3px;
+            color: #263630;
+            font-size: 0.94rem;
+            font-weight: 900;
+        }
+
+        .api-text {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.86rem;
+            line-height: 1.45;
+        }
+
+        .api-link {
+            display: inline-flex;
+            min-height: 30px;
+            align-items: center;
+            margin-top: 6px;
+            color: var(--accent);
+            font-size: 0.86rem;
+            font-weight: 900;
+            text-decoration: none;
+        }
+
+        .api-link:hover {
+            text-decoration: underline;
+        }
+
+        .security-note {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin: 18px 0 0;
+            color: rgba(255, 255, 255, 0.74);
+            font-size: 0.88rem;
+        }
+
+        .security-note svg {
+            flex: 0 0 auto;
+            width: 18px;
+            height: 18px;
+            color: #9be0d5;
+        }
+
+        @media (max-width: 920px) {
+            body {
+                background-position: 62% center;
+            }
+
+            .login-page {
+                grid-template-columns: 1fr;
+                gap: 32px;
+                width: min(680px, calc(100vw - 32px));
+                padding: 28px 0;
+            }
+
+            .brand-lockup {
+                margin-bottom: 34px;
+            }
+
+            .hero-title {
+                font-size: clamp(2.32rem, 10vw, 4rem);
+            }
+
+            .proof-list {
+                grid-template-columns: 1fr;
+                margin-top: 28px;
+            }
+        }
+
+        @media (max-width: 540px) {
+            .login-page {
+                width: min(100% - 24px, 440px);
+                padding: 18px 0;
+                gap: 24px;
+            }
+
+            .brand-area {
+                min-height: auto;
+            }
+
+            .brand-lockup {
+                gap: 12px;
+                margin-bottom: 22px;
+            }
+
+            .brand-mark {
+                width: 42px;
+                height: 42px;
+            }
+
+            .hero-kicker {
+                margin-bottom: 12px;
+                font-size: 0.8rem;
+            }
+
+            .hero-title {
+                font-size: 2.12rem;
+            }
+
+            .hero-copy {
+                margin-top: 18px;
+                font-size: 0.96rem;
+                line-height: 1.62;
+            }
+
+            .proof-list,
+            .security-note {
+                display: none;
+            }
+
+            .proof-item {
+                min-height: auto;
+                padding: 15px;
+            }
+
+            .signin-inner {
+                padding: 24px 18px;
+            }
+
+            .form-options {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .register-row {
+                flex-direction: column;
+                gap: 2px;
+                text-align: center;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                transition-duration: 0.01ms !important;
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="login-page" aria-label="爱玩酒馆登录示范">
+        <section class="brand-area" aria-labelledby="brand-title">
+            <div class="brand-lockup">
+                <span class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M7.5 4.75h9l1.75 5.25c.8 2.4-.18 5.03-2.35 6.32L12 18.65l-3.9-2.33C5.93 15.03 4.95 12.4 5.75 10L7.5 4.75Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                        <path d="M9.2 10.7h5.6M10.2 13.35h3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                    </svg>
+                </span>
+                <div>
+                    <p class="brand-name">爱玩酒馆</p>
+                    <p class="brand-subtitle">把今晚的故事留给爱玩</p>
+                </div>
+            </div>
+
+            <p class="hero-kicker">欢迎来到你的深夜酒馆</p>
+            <h1 id="brand-title" class="hero-title">找个座位，今晚有人陪你聊。</h1>
+            <p class="hero-copy">
+                下班后的放空、睡前的一段闲谈、突然冒出来的脑洞，都可以在这里慢慢展开。爱玩酒馆给你一个轻松进来、自在停留的地方。
+            </p>
+
+            <div class="proof-list" aria-label="产品能力摘要">
+                <div class="proof-item">
+                    <p class="proof-label">随时开聊</p>
+                    <p class="proof-value">打开酒馆，就回到熟悉的聊天氛围</p>
+                </div>
+                <div class="proof-item">
+                    <p class="proof-label">沉浸氛围</p>
+                    <p class="proof-value">像走进一间只为你亮灯的小酒馆</p>
+                </div>
+                <div class="proof-item">
+                    <p class="proof-label">老友回座</p>
+                    <p class="proof-value">上次没聊完的话题，今晚接着说</p>
+                </div>
+            </div>
+
+            <p class="security-note">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 3.5 19 6v5.6c0 4.2-2.82 7.95-7 9.05-4.18-1.1-7-4.85-7-9.05V6l7-2.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                    <path d="m8.9 12.2 2.1 2.1 4.4-4.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                账号只用来保存你的座位和偏好，登录后继续上次的夜聊。
+            </p>
+        </section>
+
+        <section class="signin-panel" aria-labelledby="signin-title">
+            <div class="signin-inner">
+                <p class="panel-eyebrow">欢迎回来</p>
+                <h2 id="signin-title" class="panel-title">登录爱玩酒馆</h2>
+                <p class="panel-copy">请输入账号与密码，回到你的专属座位。</p>
+
+                <form>
+                    <div class="field-group">
+                        <div class="field">
+                            <label for="demo-handle">账号</label>
+                            <input id="demo-handle" name="handle" type="text" placeholder="请输入账号" autocomplete="username">
+                        </div>
+                        <div class="field">
+                            <label for="demo-password">密码</label>
+                            <input id="demo-password" name="password" type="password" placeholder="请输入密码" autocomplete="current-password">
+                        </div>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="remember">
+                            <input type="checkbox" name="remember">
+                            <span>保持登录状态</span>
+                        </label>
+                        <a class="support-link" href="#">需要帮助？</a>
+                    </div>
+
+                    <button class="primary-button" type="button">进入酒馆</button>
+                </form>
+
+                <div class="register-row">
+                    <span>还没有账号？</span>
+                    <a class="register-link" href="#">注册账号</a>
+                </div>
+
+                <div class="panel-divider"></div>
+
+                <div class="api-strip">
+                    <span class="api-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="m13 3-7 10h5l-1 8 8-11h-5l0-7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                        </svg>
+                    </span>
+                    <div>
+                        <p class="api-title">爱玩补给站</p>
+                        <p class="api-text">新朋友注册有体验礼，每日签到和邀请好友还能领取更多聊天次数。</p>
+                        <a class="api-link" href="https://api.aiwanai.cc" target="_blank" rel="noopener noreferrer">访问 api.aiwanai.cc</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>

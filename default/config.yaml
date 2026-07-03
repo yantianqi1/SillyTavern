@@ -228,6 +228,31 @@ backups:
     # Interval in milliseconds to throttle chat backups per user
     throttleInterval: 10000
 
+# S3-compatible full data-root cloud backups.
+# When enabled, SillyTavern uploads one full zip snapshot to the configured bucket
+# and writes a latest.json manifest. On a fresh empty deployment, it can restore
+# that snapshot before user accounts are initialized so existing users can log in.
+cloudBackups:
+  enabled: false
+  endpoint: ""
+  region: "auto"
+  bucket: ""
+  accessKeyId: ""
+  secretAccessKey: ""
+  forcePathStyle: true
+  prefix: "sillytavern"
+  schedule:
+    enabled: true
+    intervalHours: 24
+    startupDelaySeconds: 60
+  retention:
+    # Number of full cloud backup snapshots to keep. Older snapshots are deleted
+    # from the bucket after each successful backup. Set to 0 to disable cleanup.
+    keepBackups: 7
+  restore:
+    enabled: true
+    mode: "emptyDataRootOnly"
+
 # THUMBNAILING CONFIGURATION
 thumbnails:
   # Enable thumbnail generation
@@ -292,6 +317,11 @@ whitelistImportDomains:
 ##   headers:
 ##     User-Agent: "Googlebot/2.1 (+http://www.google.com/bot.html)"
 requestOverrides: []
+
+# -- CHARACTER STORE CONFIGURATION --
+characterStore:
+  # Extra key for the admin submission review page. Leave empty to disable.
+  adminReviewKey: ""
 
 # -- API CONNECTION CONFIGURATION --
 # Chat completion source IDs disabled by the server.

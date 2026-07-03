@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>SillyTavern</title>
+    <title>爱玩酒馆</title>
     <base href="/">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, viewport-fit=cover, initial-scale=1, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
@@ -45,7 +45,6 @@
     <link rel="stylesheet" type="text/css" href="css/macros.css">
     <link rel="stylesheet" type="text/css" href="css/character-store.css">
     <link rel="stylesheet" type="text/css" href="css/character-store-cards.css">
-    <link rel="stylesheet" type="text/css" href="css/character-store-floating-entry.css">
     <link rel="stylesheet" type="text/css" href="css/user.css?v=aiwan-warm-20260628-3">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <!-- Scripts are loaded at the end of the body to improve page load speed -->
@@ -5992,11 +5991,6 @@
                 <div id="rightNavDrawerIcon" class="drawer-icon fa-solid fa-address-card fa-fw closedIcon" title="Character Management" data-i18n="[title]Character Management">
                 </div>
             </div>
-            <button id="character_store_sidebar_entry" class="character_store_sidebar_entry" type="button" title="拖动调整位置，点击打开角色卡商店" aria-label="拖动调整位置，点击打开角色卡商店">
-                <span class="character_store_sidebar_icon fa-solid fa-store"></span>
-                <span class="character_store_sidebar_label">角色卡商店</span>
-                <span class="character_store_sidebar_hint">Sheet</span>
-            </button>
             <nav id="right-nav-panel" class="drawer-content closedDrawer fillRight">
                 <div id="right-nav-panelheader" class="fa-solid fa-grip drag-grabber">
                 </div>
@@ -6414,17 +6408,76 @@
                     <div class="character_store_showcase_icon fa-solid fa-store"></div>
                     <div class="character_store_showcase_copy">
                         <strong id="character_store_title">角色卡商店</strong>
-                        <small>Sheet Collection</small>
+                        <small>公共角色库</small>
                     </div>
                     <div class="character_store_showcase_actions">
                         <span id="character_store_count" class="character_store_count">0/0</span>
                         <div id="character_store_loading" class="fa-solid fa-spinner fa-spin" style="display: none;"></div>
-                        <button id="character_store_refresh" class="menu_button fa-solid fa-rotate-right" type="button" title="刷新"></button>
-                        <button id="character_store_close" class="menu_button fa-solid fa-xmark" type="button" title="关闭"></button>
+                        <button id="character_store_upload" class="menu_button fa-solid fa-upload" type="button" title="上传角色卡" aria-label="上传角色卡" aria-expanded="false" aria-controls="character_store_upload_panel"></button>
+                        <button id="character_store_refresh" class="menu_button fa-solid fa-rotate-right" type="button" title="刷新" aria-label="刷新角色卡商店"></button>
+                        <button id="character_store_close" class="menu_button fa-solid fa-xmark" type="button" title="关闭" aria-label="关闭角色卡商店"></button>
                     </div>
                 </div>
                 <div class="character_store_controls">
                     <input id="character_store_search" class="text_pole textarea_compact" type="search" placeholder="搜索角色卡" />
+                </div>
+                <form id="character_store_upload_panel" class="character_store_upload_panel" style="display: none;">
+                    <div class="character_store_upload_grid">
+                        <label>
+                            <span>文件</span>
+                            <input id="character_store_upload_file" class="text_pole" type="file" accept=".png,.json" />
+                        </label>
+                        <label>
+                            <span>名称</span>
+                            <input id="character_store_upload_name" class="text_pole" type="text" maxlength="120" autocomplete="off" />
+                        </label>
+                        <label>
+                            <span>分类</span>
+                            <select id="character_store_upload_category" class="text_pole"></select>
+                        </label>
+                        <label class="character_store_upload_tags_field">
+                            <span>标签</span>
+                            <input id="character_store_upload_tags" class="text_pole" type="text" maxlength="240" autocomplete="off" placeholder="补充标签，可用逗号分隔" />
+                        </label>
+                        <div id="character_store_upload_tag_choices" class="character_store_tag_choices" aria-label="常用标签"></div>
+                    </div>
+                    <label class="character_store_upload_summary">
+                        <span>简介</span>
+                        <textarea id="character_store_upload_summary" class="text_pole textarea_compact" maxlength="600"></textarea>
+                    </label>
+                    <div class="character_store_upload_actions">
+                        <button id="character_store_upload_submit" class="menu_button" type="submit">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>提交审核</span>
+                        </button>
+                        <button id="character_store_upload_cancel" class="menu_button" type="button">
+                            <i class="fa-solid fa-xmark"></i>
+                            <span>取消</span>
+                        </button>
+                    </div>
+                </form>
+                <div id="character_store_original_confirm_overlay" class="character_store_original_confirm_overlay" style="display: none;" aria-hidden="true">
+                    <div class="character_store_original_confirm_dialog" role="dialog" aria-modal="true" aria-labelledby="character_store_original_confirm_title">
+                        <div class="character_store_original_confirm_icon fa-solid fa-certificate"></div>
+                        <div class="character_store_original_confirm_copy">
+                            <strong id="character_store_original_confirm_title">原创确认</strong>
+                            <p>请确认这张角色卡是你原创，或你拥有公开上传和分享的授权。</p>
+                        </div>
+                        <label class="character_store_original_confirm_check" for="character_store_original_confirm_checkbox">
+                            <input id="character_store_original_confirm_checkbox" type="checkbox" />
+                            <span>我确认这张角色卡是我原创，或我拥有公开上传和分享的授权。</span>
+                        </label>
+                        <div class="character_store_original_confirm_actions">
+                            <button id="character_store_original_confirm_submit" class="menu_button" type="button" disabled>
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span>确认并提交</span>
+                            </button>
+                            <button id="character_store_original_confirm_cancel" class="menu_button" type="button">
+                                <i class="fa-solid fa-xmark"></i>
+                                <span>取消</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div id="character_store_tags" class="character_store_tags"></div>
             </div>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Character Store Review</title>
+    <base href="/">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, viewport-fit=cover, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#333">
+    <link href="webfonts/NotoSans/stylesheet.css" rel="stylesheet">
+    <link href="css/fontawesome.min.css" rel="stylesheet">
+    <link href="css/solid.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="css/character-store-admin.css">
+</head>
+
+<body class="store_submission_body">
+    <main class="store_submission_shell">
+        <header class="store_submission_toolbar">
+            <div>
+                <h1>角色卡审核</h1>
+                <p id="store_submission_status">正在载入待审核角色卡</p>
+            </div>
+            <div class="store_submission_toolbar_actions">
+                <a class="menu_button" href="/">
+                    <i class="fa-solid fa-house"></i>
+                    <span>返回酒馆</span>
+                </a>
+                <button id="store_submission_refresh" class="menu_button" type="button">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>刷新</span>
+                </button>
+            </div>
+        </header>
+
+        <section id="store_review_key_gate" class="store_review_key_gate" hidden>
+            <form id="store_review_key_form" class="store_review_key_form">
+                <label class="store_review_key_field" for="store_review_key_input">
+                    <span>审核密钥</span>
+                    <input id="store_review_key_input" class="text_pole" type="password" autocomplete="current-password">
+                </label>
+                <button id="store_review_key_submit" class="menu_button" type="submit">
+                    <i class="fa-solid fa-key"></i>
+                    <span>解锁</span>
+                </button>
+            </form>
+            <p id="store_review_key_message" class="store_review_key_message"></p>
+        </section>
+
+        <section id="store_submission_list" class="store_submission_list" aria-live="polite"></section>
+    </main>
+
+    <script type="module" src="scripts/character-store-admin.js"></script>
+</body>
+
+</html>

@@ -12,7 +12,10 @@
 /docker/data
 /docker/plugins
 /docker/dist
+/docker/*.md
 /public/scripts/extensions/third-party
+/public/img/login-background.png
+/asset-*.png
 
 # --- Plugins (keep only package files) ---
 /plugins/*

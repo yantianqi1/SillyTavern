@@ -6,19 +6,27 @@ import {
 } from './character-store-data.js';
 import { renderStoreCard, renderStoreEmptyState } from './character-store-card-renderer.js';
 import { renderStorePagination, renderStoreTags as renderTagControls } from './character-store-controls-renderer.js';
-import { initFloatingCharacterStoreEntry } from './character-store-floating-entry.js';
+import {
+    CHARACTER_STORE_CATEGORIES,
+    CHARACTER_STORE_TAGS,
+    DEFAULT_CHARACTER_STORE_CATEGORY,
+    parseStoreTags,
+    uniqueStoreTags,
+} from './character-store-taxonomy.js';
 
 export * from './character-store-data.js';
 
 const STORE_LIST_ENDPOINT = '/api/characters/store/list';
 const STORE_IMPORT_ENDPOINT = '/api/characters/store/import';
 const STORE_PREVIEW_ENDPOINT = '/api/characters/store/preview';
+const STORE_UPLOAD_ENDPOINT = '/api/characters/store/submissions/upload';
 const STORE_MODAL_OVERLAY_ID = 'character_store_modal_overlay';
 const SEARCH_DEBOUNCE_MS = 180;
 
 let dependencies = null;
 let searchInputTimer = null;
 let storeRequestId = 0;
+let originalConfirmationResolve = null;
 const storeState = {
     pages: new Map(),
     pagination: { page: 1, pageSize: STORE_PAGE_SIZE, total: 0, totalPages: 1 },
@@ -30,10 +38,19 @@ const storeState = {
 
 export function initCharacterStore(deps) {
     dependencies = deps;
-    initFloatingCharacterStoreEntry($('#character_store_sidebar_entry'));
-    $('#rm_button_character_store, #character_store_sidebar_entry').on('click', openCharacterStore);
+    ensureCharacterStoreOverlayRoot();
+    renderStoreUploadTaxonomyControls();
+    $('#rm_button_character_store').on('click', openCharacterStore);
     $('#character_store_close').on('click', closeCharacterStore);
     $('#character_store_refresh').on('click', loadCharacterStore);
+    $('#character_store_upload').on('click', onUploadToggleClick);
+    $('#character_store_upload_cancel').on('click', closeStoreUploadPanel);
+    $('#character_store_upload_panel').on('submit', onUploadSubmit);
+    $('#character_store_upload_tag_choices').on('click', '.character_store_tag_choice', onUploadTagChoiceClick);
+    $('#character_store_original_confirm_checkbox').on('change', updateStoreOriginalConfirmState);
+    $('#character_store_original_confirm_submit').on('click', onOriginalConfirmSubmit);
+    $('#character_store_original_confirm_cancel').on('click', onOriginalConfirmCancel);
+    $('#character_store_original_confirm_overlay').on('click', onOriginalConfirmOverlayClick);
     $('#character_store_search').on('input', onSearchInput);
     $(`#${STORE_MODAL_OVERLAY_ID}`).on('click', onStoreOverlayClick);
     $(document).on('keydown', onStoreKeydown);
@@ -52,6 +69,8 @@ async function openCharacterStore(event) {
 
 function closeCharacterStore(event) {
     event?.preventDefault();
+    cancelStoreOriginalConfirmation();
+    closeStoreUploadPanel();
     setCharacterStoreOpen(false);
 }
 
@@ -62,6 +81,11 @@ function onStoreOverlayClick(event) {
 }
 
 function onStoreKeydown(event) {
+    if (event.key === 'Escape' && isStoreOriginalConfirmationOpen()) {
+        event.preventDefault();
+        cancelStoreOriginalConfirmation();
+        return;
+    }
     if (event.key === 'Escape' && isCharacterStoreOpen()) {
         closeCharacterStore(event);
     }
@@ -195,6 +219,60 @@ function onTagsToggleClick(event) {
     renderStoreTags();
 }
 
+function onUploadToggleClick(event) {
+    event?.preventDefault();
+    const panel = $('#character_store_upload_panel');
+    const shouldOpen = !panel.is(':visible');
+    setStoreUploadPanelOpen(shouldOpen);
+    if (shouldOpen) {
+        $('#character_store_upload_name').trigger('focus');
+    }
+}
+
+async function onUploadSubmit(event) {
+    event?.preventDefault();
+    const fileInput = /** @type {HTMLInputElement | undefined} */ ($('#character_store_upload_file').get(0));
+    const file = fileInput?.files?.[0];
+    const name = String($('#character_store_upload_name').val() || '').trim();
+    if (!file) {
+        toastr.error('请选择角色卡文件');
+        return;
+    }
+    if (!name) {
+        toastr.error('请填写角色卡名称');
+        return;
+    }
+    if (!await confirmStoreOriginalUpload()) {
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+    formData.append('name', name);
+    formData.append('category', String($('#character_store_upload_category').val() || DEFAULT_CHARACTER_STORE_CATEGORY));
+    formData.append('tags', getSelectedStoreUploadTags().join('\n'));
+    formData.append('summary', String($('#character_store_upload_summary').val() || ''));
+    formData.append('original_confirmed', 'true');
+
+    setStoreUploadBusy(true);
+    try {
+        const response = await fetch(STORE_UPLOAD_ENDPOINT, {
+            method: 'POST',
+            headers: dependencies.getRequestHeaders({ omitContentType: true }),
+            body: formData,
+        });
+        await readJsonResponse(response);
+        resetStoreUploadForm();
+        closeStoreUploadPanel();
+        toastr.success('已提交，等待审核');
+    } catch (error) {
+        console.error('Failed to upload character store submission.', error);
+        toastr.error(error.message || String(error));
+    } finally {
+        setStoreUploadBusy(false);
+    }
+}
+
 async function onAddClick() {
     const button = $(this);
     const cardId = String(button.data('card-id') || '');
@@ -202,6 +280,138 @@ async function onAddClick() {
         return;
     }
     await importCard(cardId, button);
+}
+
+function closeStoreUploadPanel(event) {
+    event?.preventDefault();
+    cancelStoreOriginalConfirmation();
+    setStoreUploadPanelOpen(false);
+}
+
+function setStoreUploadPanelOpen(isOpen) {
+    $('#character_store_upload_panel').css('display', isOpen ? 'grid' : 'none');
+    $('#character_store_upload').toggleClass('active', isOpen).attr('aria-expanded', String(isOpen));
+}
+
+function resetStoreUploadForm() {
+    const form = /** @type {HTMLFormElement | undefined} */ ($('#character_store_upload_panel').get(0));
+    form?.reset();
+    $('#character_store_upload_category').val(DEFAULT_CHARACTER_STORE_CATEGORY);
+    $('#character_store_upload_tag_choices .character_store_tag_choice')
+        .removeClass('character_store_tag_choice_selected')
+        .attr('aria-pressed', 'false');
+}
+
+function renderStoreUploadTaxonomyControls() {
+    const categorySelect = $('#character_store_upload_category');
+    categorySelect.empty();
+    for (const category of CHARACTER_STORE_CATEGORIES) {
+        $('<option></option>')
+            .val(category.value)
+            .text(category.label)
+            .appendTo(categorySelect);
+    }
+    categorySelect.val(DEFAULT_CHARACTER_STORE_CATEGORY);
+
+    const tagChoices = $('#character_store_upload_tag_choices');
+    tagChoices.empty();
+    for (const tag of CHARACTER_STORE_TAGS) {
+        $('<button></button>')
+            .attr({
+                type: 'button',
+                'aria-pressed': 'false',
+            })
+            .addClass('character_store_tag_choice')
+            .data('tag', tag)
+            .text(tag)
+            .appendTo(tagChoices);
+    }
+}
+
+function onUploadTagChoiceClick(event) {
+    event?.preventDefault();
+    const button = $(event.currentTarget);
+    const isSelected = !button.hasClass('character_store_tag_choice_selected');
+    button
+        .toggleClass('character_store_tag_choice_selected', isSelected)
+        .attr('aria-pressed', String(isSelected));
+}
+
+function getSelectedStoreUploadTags() {
+    const selectedTags = $('#character_store_upload_tag_choices .character_store_tag_choice_selected')
+        .toArray()
+        .map(button => String($(button).data('tag') || ''));
+    const customTags = parseStoreTags(String($('#character_store_upload_tags').val() || ''));
+    return uniqueStoreTags([...selectedTags, ...customTags]);
+}
+
+function setStoreUploadBusy(isBusy) {
+    $('#character_store_upload_submit').toggleClass('disabled', isBusy).prop('disabled', isBusy);
+    $('#character_store_upload_cancel').toggleClass('disabled', isBusy).prop('disabled', isBusy);
+}
+
+async function confirmStoreOriginalUpload() {
+    if (originalConfirmationResolve) {
+        return false;
+    }
+    setStoreOriginalConfirmOpen(true);
+    return await new Promise((resolve) => {
+        originalConfirmationResolve = resolve;
+    });
+}
+
+function onOriginalConfirmSubmit(event) {
+    event?.preventDefault();
+    if (!$('#character_store_original_confirm_checkbox').prop('checked')) {
+        return;
+    }
+    resolveStoreOriginalConfirmation(true);
+}
+
+function onOriginalConfirmCancel(event) {
+    event?.preventDefault();
+    cancelStoreOriginalConfirmation();
+}
+
+function onOriginalConfirmOverlayClick(event) {
+    if (event.target?.id === 'character_store_original_confirm_overlay') {
+        cancelStoreOriginalConfirmation();
+    }
+}
+
+function cancelStoreOriginalConfirmation() {
+    if (originalConfirmationResolve) {
+        resolveStoreOriginalConfirmation(false);
+        return;
+    }
+    setStoreOriginalConfirmOpen(false);
+}
+
+function resolveStoreOriginalConfirmation(isConfirmed) {
+    const resolve = originalConfirmationResolve;
+    originalConfirmationResolve = null;
+    setStoreOriginalConfirmOpen(false);
+    resolve?.(isConfirmed);
+}
+
+function setStoreOriginalConfirmOpen(isOpen) {
+    const overlay = $('#character_store_original_confirm_overlay');
+    overlay.css('display', isOpen ? 'flex' : 'none').attr('aria-hidden', String(!isOpen));
+    if (isOpen) {
+        $('#character_store_original_confirm_checkbox').prop('checked', false).trigger('focus');
+    }
+    updateStoreOriginalConfirmState();
+}
+
+function updateStoreOriginalConfirmState() {
+    const isChecked = Boolean($('#character_store_original_confirm_checkbox').prop('checked'));
+    $('#character_store_original_confirm_submit')
+        .toggleClass('disabled', !isChecked)
+        .prop('disabled', !isChecked);
+}
+
+function isStoreOriginalConfirmationOpen() {
+    return $('#character_store_original_confirm_overlay').is(':visible');
 }
 
 function onPageClick(event) {
@@ -290,11 +500,19 @@ function setStoreBusy(isBusy) {
 }
 
 function setCharacterStoreOpen(isOpen) {
-    const overlay = $(`#${STORE_MODAL_OVERLAY_ID}`);
+    const overlay = ensureCharacterStoreOverlayRoot();
     overlay.css('display', isOpen ? 'flex' : 'none').attr('aria-hidden', String(!isOpen));
     $('body').toggleClass('character_store_modal_open', isOpen);
 }
 
 function isCharacterStoreOpen() {
     return $(`#${STORE_MODAL_OVERLAY_ID}`).is(':visible');
+}
+
+function ensureCharacterStoreOverlayRoot() {
+    const overlay = $(`#${STORE_MODAL_OVERLAY_ID}`);
+    if (overlay.length && overlay.parent()[0] !== document.body) {
+        overlay.appendTo(document.body);
+    }
+    return overlay;
 }

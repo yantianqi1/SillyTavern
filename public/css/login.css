@@ -16,11 +16,11 @@ body.login {
     background:
         linear-gradient(90deg, rgba(4, 12, 11, 0.78), rgba(4, 12, 11, 0.52) 48%, rgba(4, 12, 11, 0.82)),
         url("../img/login-background.jpg");
-    background-color: var(--login-page-bg);
+    background-color: var(--login-page-bg) !important;
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
-    color: var(--login-surface);
+    color: var(--login-surface) !important;
     font-family: "Noto Sans", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
 }
 
@@ -44,7 +44,7 @@ body.login #shadow_popup {
     min-height: 100vh;
     min-height: 100dvh;
     padding: 0;
-    background: transparent;
+    background: transparent !important;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
 }
@@ -62,11 +62,11 @@ body.login #dialogue_popup {
     min-height: 100dvh;
     margin: 0 auto;
     padding: 0;
-    border: 0;
+    border: 0 !important;
     border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-    color: inherit;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--login-surface) !important;
     transform: none;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -99,6 +99,15 @@ body.login .login-brand-area {
     flex-direction: column;
     justify-content: center;
     min-width: 0;
+    max-width: 720px;
+    padding: clamp(24px, 4vw, 44px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(3, 12, 11, 0.78), rgba(5, 18, 16, 0.5));
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(12px) saturate(118%);
+    -webkit-backdrop-filter: blur(12px) saturate(118%);
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.38);
     text-align: left;
 }
 
@@ -137,7 +146,7 @@ body.login .login-brand-name {
 
 body.login .login-brand-subtitle {
     margin: 3px 0 0;
-    color: rgba(255, 255, 255, 0.68);
+    color: rgba(255, 255, 255, 0.8);
     font-size: 0.92rem;
     line-height: 1.35;
 }
@@ -171,7 +180,7 @@ body.login .login-hero-title {
 body.login .login-hero-copy {
     max-width: 620px;
     margin: 20px 0 0;
-    color: rgba(255, 255, 255, 0.76);
+    color: rgba(255, 255, 255, 0.88);
     font-size: clamp(1rem, 1.4vw, 1.14rem);
     line-height: 1.75;
 }
@@ -187,16 +196,16 @@ body.login .login-proof-list {
 body.login .login-proof-item {
     min-height: 104px;
     padding: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(5, 18, 16, 0.52);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
 }
 
 body.login .login-proof-label {
     margin: 0 0 12px;
-    color: rgba(255, 255, 255, 0.62);
+    color: rgba(248, 220, 168, 0.9);
     font-size: 0.82rem;
     font-weight: 700;
     line-height: 1.2;
@@ -215,7 +224,7 @@ body.login .login-security-note {
     gap: 10px;
     align-items: center;
     margin: 18px 0 0;
-    color: rgba(255, 255, 255, 0.74);
+    color: rgba(255, 255, 255, 0.82);
     font-size: 0.88rem;
     line-height: 1.45;
 }

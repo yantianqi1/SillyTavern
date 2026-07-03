@@ -164,6 +164,27 @@ backups:
     maxTotalBackups: -1
     throttleInterval: 10000
 
+# S3 兼容对象存储全量备份。部署时在服务器本地配置中填入访问密钥，
+# 不要把真实 accessKeyId / secretAccessKey 提交到仓库。
+cloudBackups:
+  enabled: true
+  endpoint: "http://45.205.31.37:9000"
+  region: "auto"
+  bucket: "aiwan-sillytavern-docker-data"
+  accessKeyId: ""
+  secretAccessKey: ""
+  forcePathStyle: true
+  prefix: "sillytavern"
+  schedule:
+    enabled: true
+    intervalHours: 24
+    startupDelaySeconds: 60
+  retention:
+    keepBackups: 7
+  restore:
+    enabled: true
+    mode: "emptyDataRootOnly"
+
 # THUMBNAILING CONFIGURATION
 thumbnails:
   enabled: true
